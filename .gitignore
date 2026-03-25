@@ -1,0 +1,27 @@
+# .gitignore
+# Environments
+.env
+.venv
+env/
+venv/
+*.pyc
+__pycache__/
+
+# Data and Models
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.parquet
+*.csv
+*.geojson
+*.h5
+*.pt
+*.pth
+
+# Jupyter
+.ipynb_checkpoints
+
+# OS Files
+.DS_Store
+Thumbs.db

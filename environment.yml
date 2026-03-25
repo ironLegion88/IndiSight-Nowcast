@@ -1,0 +1,29 @@
+name: indisight
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - geopandas
+  - pandas
+  - numpy
+  - scikit-learn
+  - psycopg2
+  - sqlalchemy
+  - geoalchemy2
+  - jupyterlab
+  - pytorch
+  - torchvision
+  - xgboost
+  - shap
+  - pip:
+      - streamlit
+      - pydeck
+      - qdrant-client
+      - langchain
+      - langchain-community
+      - litellm
+      - earthengine-api
+      - python-dotenv

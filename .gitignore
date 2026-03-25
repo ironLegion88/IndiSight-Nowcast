@@ -24,4 +24,6 @@ data/processed/*
 
 # OS Files
 .DS_Store
-Thumbs.db
+Thumbs.db# pixi environments
+.pixi/*
+!.pixi/config.toml

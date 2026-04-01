@@ -6,7 +6,11 @@ def download_district_boundaries():
     Downloads and cleans India district boundaries.
     """
     print("Fetching India District boundaries...")
-    url = "https://raw.githubusercontent.com/datameet/maps/master/Districts/Census_2011/india_districts.geojson"
+    # Old link, no longer working
+    # url = "https://raw.githubusercontent.com/datameet/maps/master/Districts/Census_2011/india_districts.geojson"
+    url = "https://raw.githubusercontent.com/datameet/indian-district-boundaries/refs/heads/master/topojson/india-districts-727.json"
+    # This one doesn't have CRS data
+    # url = "https://raw.githubusercontent.com/datameet/indian-district-boundaries/refs/heads/master/topojson/india-districts-2019-734.json"
     
     try:
         districts = gpd.read_file(url)

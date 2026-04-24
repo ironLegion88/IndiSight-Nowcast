@@ -7,7 +7,8 @@ version = "0.1.0"
 
 [tasks]
 start-db = "docker-compose up -d"
-stop-db = "docker-compose down"
+stop-db = "docker compose stop"
+down-db = "docker-compose down"
 ui = "streamlit run app/main.py"
 jupyter = "jupyter lab"
 
@@ -33,6 +34,8 @@ earthengine-api = ">=1.7.18,<2"
 python-dotenv = ">=1.2.2,<2"
 tqdm = ">=4.67.3,<5"
 requests = ">=2.32.5,<3"
+seaborn = ">=0.13.2,<0.14"
+plotly = ">=6.6.0,<7"
 
 [feature.cpu.pypi-dependencies]
 torch = "*"

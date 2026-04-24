@@ -2,6 +2,7 @@
 # Environments
 .env
 .venv
+.vscode
 env/
 venv/
 *.pyc
@@ -24,6 +25,8 @@ data/processed/*
 
 # OS Files
 .DS_Store
-Thumbs.db# pixi environments
-.pixi/*
+Thumbs.db
+
+# pixi environments
+.pixi
 !.pixi/config.toml

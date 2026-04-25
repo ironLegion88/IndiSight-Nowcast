@@ -51,6 +51,8 @@ class RAGIngestionPipeline:
         
         self.qdrant_host = os.getenv("QDRANT_HOST", "localhost")
         self.qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
+        self.retry_attempts = int(os.getenv("RETRY_ATTEMPTS", "3"))
+        self.retry_backoff_seconds = float(os.getenv("RETRY_BACKOFF_SECONDS", "1.0"))
         
         self.embedding_model_name = "BAAI/bge-large-en-v1.5"
         self.vector_size = 1024 
@@ -66,20 +68,57 @@ class RAGIngestionPipeline:
         self.splitter = MarkdownTextSplitter(chunk_size=1500, chunk_overlap=200)
         self._init_qdrant()
 
+    @staticmethod
+    def _require_env_vars(keys: list[str]) -> None:
+        missing = [k for k in keys if not os.getenv(k)]
+        if missing:
+            raise ValueError(f"Missing required environment variables: {missing}")
+
+    def _retry(self, operation_name: str, fn):
+        last_error = None
+        for attempt in range(1, self.retry_attempts + 1):
+            try:
+                return fn()
+            except Exception as exc:
+                last_error = exc
+                if attempt >= self.retry_attempts:
+                    break
+                sleep_seconds = self.retry_backoff_seconds * (2 ** (attempt - 1))
+                logger.warning(
+                    "%s failed (attempt %s/%s): %s. Retrying in %.1fs",
+                    operation_name,
+                    attempt,
+                    self.retry_attempts,
+                    exc,
+                    sleep_seconds,
+                )
+                time.sleep(sleep_seconds)
+        raise RuntimeError(f"{operation_name} failed after {self.retry_attempts} attempts") from last_error
+
     def _init_qdrant(self):
         try:
-            self.client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
+            self._require_env_vars(["QDRANT_HOST", "QDRANT_PORT"])
+            self.client = self._retry(
+                "Qdrant client initialization",
+                lambda: QdrantClient(host=self.qdrant_host, port=self.qdrant_port, timeout=20),
+            )
             
             # Wipe existing collection if reset is True to prevent duplicates
             if self.reset_collection and self.client.collection_exists(self.collection_name):
                 logger.warning(f"Resetting Qdrant collection: {self.collection_name}")
-                self.client.delete_collection(self.collection_name)
+                self._retry(
+                    f"Delete collection {self.collection_name}",
+                    lambda: self.client.delete_collection(self.collection_name),
+                )
             
             if not self.client.collection_exists(self.collection_name):
                 logger.info(f"Creating new Qdrant collection: {self.collection_name}")
-                self.client.create_collection(
-                    collection_name=self.collection_name,
-                    vectors_config=VectorParams(size=self.vector_size, distance=Distance.COSINE),
+                self._retry(
+                    f"Create collection {self.collection_name}",
+                    lambda: self.client.create_collection(
+                        collection_name=self.collection_name,
+                        vectors_config=VectorParams(size=self.vector_size, distance=Distance.COSINE),
+                    ),
                 )
                 
             self.vector_store = QdrantVectorStore(
@@ -139,7 +178,10 @@ class RAGIngestionPipeline:
             batch_size = 200 
             for i in tqdm(range(0, len(all_docs_to_embed), batch_size), desc="Ingesting to Qdrant (GPU)"):
                 batch = all_docs_to_embed[i:i + batch_size]
-                self.vector_store.add_documents(batch)
+                self._retry(
+                    f"Qdrant batch ingest [{i}:{i + len(batch)}]",
+                    lambda b=batch: self.vector_store.add_documents(b),
+                )
                 
             ingest_time = time.time() - batch_start
             logger.info(f"GPU Ingestion complete in {ingest_time:.2f} seconds.")

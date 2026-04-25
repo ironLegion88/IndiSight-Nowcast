@@ -1,4 +1,5 @@
 import os
+import time
 from typing import Any
 from collections.abc import Iterator
 from dotenv import load_dotenv
@@ -30,6 +31,8 @@ class IndiSightAgent:
         self.llm_mode = llm_mode
         self.qdrant_host = os.getenv("QDRANT_HOST", "localhost")
         self.qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
+        self.retry_attempts = int(os.getenv("RETRY_ATTEMPTS", "3"))
+        self.retry_backoff_seconds = float(os.getenv("RETRY_BACKOFF_SECONDS", "1.0"))
         
         logger.info(f"Initializing IndiSight Agent in[{self.llm_mode.upper()}] mode...")
         self.llm = self._init_llm()
@@ -38,6 +41,34 @@ class IndiSightAgent:
         self._init_sql_tools()
         self._init_rag_tools()
         self._init_agent()
+
+    @staticmethod
+    def _require_env_vars(keys: list[str]) -> None:
+        missing = [k for k in keys if not os.getenv(k)]
+        if missing:
+            raise ValueError(f"Missing required environment variables: {missing}")
+
+    def _retry(self, operation_name: str, fn):
+        """Retry transient operations with exponential backoff."""
+        last_error = None
+        for attempt in range(1, self.retry_attempts + 1):
+            try:
+                return fn()
+            except Exception as exc:
+                last_error = exc
+                if attempt >= self.retry_attempts:
+                    break
+                sleep_seconds = self.retry_backoff_seconds * (2 ** (attempt - 1))
+                logger.warning(
+                    "%s failed (attempt %s/%s): %s. Retrying in %.1fs",
+                    operation_name,
+                    attempt,
+                    self.retry_attempts,
+                    exc,
+                    sleep_seconds,
+                )
+                time.sleep(sleep_seconds)
+        raise RuntimeError(f"{operation_name} failed after {self.retry_attempts} attempts") from last_error
 
     def _init_llm(self):
         """Initializes the LLM Backend."""
@@ -54,6 +85,7 @@ class IndiSightAgent:
     def _init_sql_tools(self):
         """Connects to PostGIS and loads SQL interaction tools."""
         logger.info("Connecting to PostGIS...")
+        self._require_env_vars(["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB"])
         user = os.getenv("POSTGRES_USER")
         password = os.getenv("POSTGRES_PASSWORD")
         host = os.getenv("POSTGRES_HOST")
@@ -61,9 +93,12 @@ class IndiSightAgent:
         db = os.getenv("POSTGRES_DB")
         
         db_uri = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
-        self.db = SQLDatabase.from_uri(
-            db_uri, 
-            include_tables=["fact_nfhs", "fact_pmgsy", "fact_mgnrega", "dim_district_geom"]
+        self.db = self._retry(
+            "PostGIS connection",
+            lambda: SQLDatabase.from_uri(
+                db_uri,
+                include_tables=["fact_nfhs", "fact_pmgsy", "fact_mgnrega", "dim_district_geom"],
+            ),
         )
 
         sql_tools =[
@@ -82,7 +117,10 @@ class IndiSightAgent:
             encode_kwargs={'normalize_embeddings': True}
         )
         
-        client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
+        client = self._retry(
+            "Qdrant connection",
+            lambda: QdrantClient(host=self.qdrant_host, port=self.qdrant_port, timeout=20),
+        )
         vector_store = QdrantVectorStore(
             client=client,
             collection_name="indisight_policies",

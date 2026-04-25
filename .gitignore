@@ -20,6 +20,9 @@ data/processed/*
 *.pt
 *.pth
 
+# Logs
+logs/
+
 # Jupyter
 .ipynb_checkpoints
 

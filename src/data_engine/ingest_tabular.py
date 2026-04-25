@@ -104,6 +104,17 @@ class DataIngestionPipeline:
         }
 
     @staticmethod
+    def _require_file(path: Path) -> None:
+        if not path.exists():
+            raise FileNotFoundError(f"Required input file not found: {path}")
+
+    @staticmethod
+    def _require_columns(df: pd.DataFrame, required: list[str], dataset_name: str) -> None:
+        missing = [c for c in required if c not in df.columns]
+        if missing:
+            raise ValueError(f"{dataset_name} missing required columns: {missing}")
+
+    @staticmethod
     def _clean_column_name(col: str) -> str:
         """Removes NDAP noise and standardizes column string."""
         col = re.sub(r"\s*\(UOM:.*?\)\s*\|Scaling Factor:\d+", "", str(col))
@@ -140,14 +151,29 @@ class DataIngestionPipeline:
     def process_nfhs(self):
         logger.info("Starting NFHS Data Processing...")
         try:
-            df4 = pd.read_csv(self.raw_dir / "nfhs4_district/NDAP_REPORT_7034.csv")
-            df5 = pd.read_csv(self.raw_dir / "nfhs5_district/NDAP_REPORT_6822.csv")
+            nfhs4_path = self.raw_dir / "nfhs4_district/NDAP_REPORT_7034.csv"
+            nfhs5_path = self.raw_dir / "nfhs5_district/NDAP_REPORT_6822.csv"
+            self._require_file(nfhs4_path)
+            self._require_file(nfhs5_path)
+
+            df4 = pd.read_csv(nfhs4_path)
+            df5 = pd.read_csv(nfhs5_path)
             
             if 'Residence type' in df4.columns:
                 df4 = df4[df4['Residence type'] == 'Total'].drop(columns=['Residence type'])
                 
             df4 = self._map_columns(df4)
             df5 = self._map_columns(df5)
+            self._require_columns(
+                df4,
+                ['state_lgd_code', 'state', 'district_lgd_code', 'district', 'year'],
+                "NFHS4",
+            )
+            self._require_columns(
+                df5,
+                ['state_lgd_code', 'state', 'district_lgd_code', 'district', 'year'],
+                "NFHS5",
+            )
             
             df4['year'] = df4['year'].apply(self._extract_year)
             df5['year'] = df5['year'].apply(self._extract_year)
@@ -183,8 +209,19 @@ class DataIngestionPipeline:
     def process_spatial_concordance(self):
         logger.info("Starting Spatial Concordance Mapping...")
         try:
-            gdf = gpd.read_file(self.raw_dir / "india_districts.geojson")
-            concordance = pd.read_csv(self.raw_dir / "district_concordance_with_LGD_codes_parent.csv")
+            spatial_path = self.raw_dir / "india_districts.geojson"
+            concordance_path = self.raw_dir / "district_concordance_with_LGD_codes_parent.csv"
+            self._require_file(spatial_path)
+            self._require_file(concordance_path)
+
+            gdf = gpd.read_file(spatial_path)
+            concordance = pd.read_csv(concordance_path)
+            self._require_columns(gdf, ['dt_code', 'st_nm', 'geometry'], "District GeoJSON")
+            self._require_columns(
+                concordance,
+                ['Census 2011 Code', 'LGD District Code', 'LGD State Code', 'LGD District Name'],
+                "District concordance",
+            )
             
             gdf['dt_code_int'] = pd.to_numeric(gdf['dt_code'], errors='coerce')
             concordance['Census 2011 Code Int'] = pd.to_numeric(concordance['Census 2011 Code'], errors='coerce')
@@ -210,8 +247,18 @@ class DataIngestionPipeline:
     def process_infrastructure(self):
         logger.info("Starting Infrastructure Data Processing...")
         try:
-            df_pmgsy = pd.read_csv(self.raw_dir / "pmgsy/NDAP_REPORT_7096.csv")
+            pmgsy_path = self.raw_dir / "pmgsy/NDAP_REPORT_7096.csv"
+            mgnrega_path = self.raw_dir / "mgnrega/NDAP_REPORT_6026.csv"
+            self._require_file(pmgsy_path)
+            self._require_file(mgnrega_path)
+
+            df_pmgsy = pd.read_csv(pmgsy_path)
             df_pmgsy.columns =[self._clean_column_name(c) for c in df_pmgsy.columns]
+            self._require_columns(
+                df_pmgsy,
+                ['district_lgd_code', 'yearcode', 'road_length_of_state_and_district', 'sanction_cost_granted_by_ministry_of_rural_development_to_for_road_construction'],
+                "PMGSY",
+            )
             df_pmgsy['year'] = df_pmgsy['yearcode'].astype(int)
             
             pmgsy_agg = df_pmgsy.groupby(['district_lgd_code', 'year']).agg({
@@ -224,8 +271,13 @@ class DataIngestionPipeline:
             }, inplace=True)
             pmgsy_agg.to_parquet(self.tabular_out / "pmgsy_district_agg.parquet", index=False)
             
-            df_mgnrega = pd.read_csv(self.raw_dir / "mgnrega/NDAP_REPORT_6026.csv")
+            df_mgnrega = pd.read_csv(mgnrega_path)
             df_mgnrega.columns =[self._clean_column_name(c) for c in df_mgnrega.columns]
+            self._require_columns(
+                df_mgnrega,
+                ['state_lgd_code', 'state', 'yearcode', 'households_that_demanded_work', 'labour_expenditure_that_has_been_disbursed'],
+                "MGNREGA",
+            )
             df_mgnrega['year'] = df_mgnrega['yearcode'].astype(int)
             
             cols_to_keep =['state_lgd_code', 'state', 'year', 'households_that_demanded_work', 'labour_expenditure_that_has_been_disbursed']

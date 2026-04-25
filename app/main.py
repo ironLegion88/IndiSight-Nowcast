@@ -16,6 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
 # Import our Agent
 from src.agent.llm_agent import IndiSightAgent
 from src.utils.logger import get_logger
+from src.utils.contract_validator import BenchmarkContract
 
 logger = get_logger(module_name=__name__, log_sub_dir="app")
 
@@ -55,6 +56,20 @@ def get_agent():
     """Initializes the LangChain Agent once."""
     logger.info("Initializing cached IndiSight agent for Streamlit session")
     return IndiSightAgent(llm_mode="gemini")
+
+@st.cache_data
+def get_benchmarks():
+    validator = BenchmarkContract(PROJECT_ROOT / "data" / "processed" / "benchmarks")
+    return validator.get_valid_benchmarks()
+
+@st.cache_data
+def load_predictions(predictions_path):
+    return pd.read_parquet(predictions_path)
+
+@st.cache_data
+def load_shap(shap_path):
+    with open(shap_path, "r") as f:
+        return json.load(f)
 
 @st.cache_data
 def load_plotly_artifact(filename: str):
@@ -142,6 +157,7 @@ def validate_eda_contract(artifacts: dict) -> list[str]:
 
 # --- Initialization ---
 nfhs_long, gdf, available_metrics = load_data()
+valid_benchmarks = get_benchmarks()
 agent = get_agent()
 
 # --- Sidebar UI ---
@@ -151,9 +167,22 @@ st.sidebar.header("1. Map Configuration")
 selected_metric = st.sidebar.selectbox("Target Metric", available_metrics, index=available_metrics.index("hh_electricity") if "hh_electricity" in available_metrics else 0)
 selected_year = st.sidebar.radio("Data Year", [2015, 2019], index=1)
 
-st.sidebar.header("2. Model Configuration (Pending Member A)")
-st.sidebar.selectbox("Vision Model",["ResNet-50", "Prithvi-100M (EO)"], disabled=True, help="Will be enabled when Member A completes embeddings.")
-st.sidebar.slider("PCA Dimensions", min_value=16, max_value=1024, value=128, step=16, disabled=True)
+st.sidebar.header("2. Model Configuration")
+selected_run_data = None
+predictions_df = None
+shap_data = None
+
+if not valid_benchmarks:
+    st.sidebar.warning("No valid benchmarks found. Pending Member A's artifacts.")
+    st.sidebar.selectbox("Vision Model",["ResNet-50", "Prithvi-100M (EO)"], disabled=True, help="Will be enabled when Member A completes embeddings.")
+    st.sidebar.slider("PCA Dimensions", min_value=16, max_value=1024, value=128, step=16, disabled=True)
+else:
+    run_ids = [b["run_id"] for b in valid_benchmarks]
+    selected_run_id = st.sidebar.selectbox("Benchmark Run", run_ids)
+    selected_run_data = next((b for b in valid_benchmarks if b["run_id"] == selected_run_id), None)
+    if selected_run_data:
+        predictions_df = load_predictions(selected_run_data["paths"]["predictions"])
+        shap_data = load_shap(selected_run_data["paths"]["shap"])
 
 # --- Main UI Layout ---
 st.title("IndiSight: Multi-Modal Economic Nowcasting")
@@ -167,6 +196,8 @@ tab_map, tab_chat, tab_eda = st.tabs(["3D Spatial View", "AI Policy Assistant", 
 with tab_map:
     st.subheader(f"Spatial Distribution: {selected_metric} ({selected_year})")
     
+    map_mode = st.radio("View Mode", ["Historical Data", "Prediction Delta"] if predictions_df is not None else ["Historical Data"], horizontal=True)
+    
     # Filter Data
     df_filtered = nfhs_long[(nfhs_long['metric_name'] == selected_metric) & (nfhs_long['year'] == selected_year)]
     
@@ -177,9 +208,27 @@ with tab_map:
         gdf_merged = gdf.merge(df_filtered[['district_lgd_code', 'metric_value']], on='district_lgd_code', how='left')
         gdf_merged['metric_value'] = gdf_merged['metric_value'].fillna(0)
         
+        display_col = 'metric_value'
+        if map_mode == "Prediction Delta" and predictions_df is not None:
+            gdf_merged = gdf_merged.merge(predictions_df[['district_lgd_code', 'delta']], on='district_lgd_code', how='left')
+            gdf_merged['delta'] = gdf_merged['delta'].fillna(0)
+            display_col = 'delta'
+            
         # Calculate max value for extrusion scaling
-        max_val = gdf_merged['metric_value'].max()
+        max_val = gdf_merged[display_col].abs().max()
         scale_factor = 100000 / (max_val if max_val > 0 else 1)
+        
+        # Pre-compute elevation and color in pandas to avoid JS evaluation errors in PyDeck
+        gdf_merged['elevation'] = gdf_merged[display_col].abs() * scale_factor
+        
+        def get_color(val):
+            if map_mode == "Prediction Delta":
+                return [0, 255, 0, 150] if val > 0 else [255, 0, 0, 150]
+            else:
+                ratio = val / (max_val if max_val > 0 else 1)
+                return [int(255 - (ratio * 255)), int(ratio * 200), 150, 150]
+                
+        gdf_merged['fill_color'] = gdf_merged[display_col].apply(get_color)
         
         # Convert to JSON for PyDeck
         geojson_data = json.loads(gdf_merged.to_json())
@@ -193,8 +242,8 @@ with tab_map:
             filled=True,
             extruded=True,
             wireframe=True,
-            get_elevation=f"properties.metric_value * {scale_factor}",
-            get_fill_color="[255 - (properties.metric_value / {max_val} * 255), properties.metric_value / {max_val} * 200, 150]",
+            get_elevation="properties.elevation",
+            get_fill_color="properties.fill_color",
             get_line_color=[255, 255, 255],
             pickable=True,
         )
@@ -211,11 +260,42 @@ with tab_map:
         r = pdk.Deck(
             layers=[layer],
             initial_view_state=view_state,
-            tooltip={"text": "{district_name} ({state_name})\nValue: {metric_value}"},  # pyright: ignore[reportArgumentType]
+            tooltip={"text": "{district_name} ({state_name})\nValue: {metric_value}\nDelta: {delta}" if map_mode == "Prediction Delta" else "{district_name} ({state_name})\nValue: {metric_value}"},
             map_style=pdk.map_styles.DARK
         )
 
         st.pydeck_chart(r)
+        
+    if predictions_df is not None and shap_data is not None:
+        st.markdown("---")
+        st.subheader("District-Level Explainability (SHAP)")
+        
+        districts = predictions_df.merge(gdf[['district_lgd_code', 'district_name']], on='district_lgd_code', how='left')
+        district_options = dict(zip(districts['district_lgd_code'], districts['district_name']))
+        selected_district_code = st.selectbox("Select District for Deep Dive", options=list(district_options.keys()), format_func=lambda x: district_options[x])
+        
+        if selected_district_code:
+            str_code = str(selected_district_code)
+            if str_code in shap_data:
+                features = shap_data[str_code]
+                if features:
+                    import plotly.graph_objects as go
+                    feature_names = [f["feature"] for f in features]
+                    shap_values = [f["shap_value"] for f in features]
+                    
+                    fig = go.Figure(go.Waterfall(
+                        orientation="h",
+                        measure=["relative"] * len(features),
+                        y=feature_names,
+                        x=shap_values,
+                        connector={"line": {"color": "rgb(63, 63, 63)"}},
+                    ))
+                    fig.update_layout(title="SHAP Waterfall Plot", waterfallgap=0.3)
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("No SHAP features available for this district.")
+            else:
+                st.info("SHAP data not available for this district.")
 
 # -----------------------------------------
 # TAB 2: AI Policy Assistant

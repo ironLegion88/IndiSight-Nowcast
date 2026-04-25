@@ -114,7 +114,7 @@ class DataIngestionPipeline:
         return col
 
     @staticmethod
-    def _extract_year(year_str: str) -> int:
+    def _extract_year(year_str: str) -> int | None:
         match = re.search(r"(\d{4})", str(year_str))
         return int(match.group(1)) if match else None
 

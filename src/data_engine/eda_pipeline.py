@@ -357,9 +357,10 @@ class EDAArtifactEngine:
         """Scatters infrastructure/governance features against NFHS focus metrics."""
         logger.info("Generating Macro-Micro Feature Scatters...")
         
-        # Merge PMGSY (District) and MGNREGA (State) into NFHS 2019
+        # Merge cumulative PMGSY (District) up to 2019 and MGNREGA (State) for 2019 into NFHS 2019
         df_2019 = self.nfhs_wide[self.nfhs_wide['year'] == 2019]
-        merged = df_2019.merge(self.pmgsy[self.pmgsy['year'] == 2019], on='district_lgd_code', how='left')
+        pmgsy_cumulative = self.pmgsy[self.pmgsy['year'] <= 2019].groupby('district_lgd_code')[["pmgsy_road_length_km", "pmgsy_sanction_cost"]].sum().reset_index()
+        merged = df_2019.merge(pmgsy_cumulative, on='district_lgd_code', how='left')
         merged = merged.merge(self.mgnrega[self.mgnrega['year'] == 2019], on='state_lgd_code', how='left')
         
         # unify state column name after merges

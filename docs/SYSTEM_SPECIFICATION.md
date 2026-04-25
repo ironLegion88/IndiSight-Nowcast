@@ -24,12 +24,13 @@ The system is divided into four strictly isolated layers:
 
 ### Module 1: Data Engineering & ETL (`src/data_engine`)
 **Function:** Extracts, cleans, and standardizes raw data into the PostGIS database, ensuring spatial alignment.
-*   **`get_boundaries.py`:** Fetches official India District GeoJSON polygons. Normalizes district names and assigns Local Government Directory (LGD) Codes.
-*   **`extract_gee.py`:** Interfaces with Google Earth Engine (GEE).
+*   **`ingest_tabular.py`:** Harmonizes NFHS-4/NFHS-5/PMGSY/MGNREGA dumps into LGD-aligned parquet datasets.
+*   **`seed_postgis.py`:** Seeds PostGIS with spatial boundaries and fact tables (`fact_nfhs`, `fact_pmgsy`, `fact_mgnrega`, `dim_district_geom`).
+*   **Satellite extraction scripts (compute node):** Interfaces with Google Earth Engine (GEE).
     *   *Logic:* Calculates the centroid of each district polygon, draws a 5km x 5km bounding box, and downloads a cloud-free annual median composite of Sentinel-2 (Optical) and VIIRS (Nightlight) imagery.
     *   *Output:* High-resolution `.tif` files saved to `data/processed/images/`.
-*   **`ndap_loader.py` & `ingest_ndap.py`:** 
-    *   *Logic:* Parses NFHS-4, NFHS-5, and MGNREGA datasets. Strictly filters for `Residence type == 'Total'` to prevent double-counting. Maps datasets to LGD Codes.
+*   **ETL standard:**
+    *   *Logic:* Parses NFHS-4, NFHS-5, PMGSY, and MGNREGA datasets. Strictly filters for `Residence type == 'Total'` to prevent double-counting. Maps datasets to LGD Codes.
     *   *Interaction:* Pushes cleaned DataFrames into the local Dockerized PostGIS database using `SQLAlchemy` and `GeoAlchemy2`.
 
 ### Module 2: Vision Extraction Pipeline (`src/models/vision`)
@@ -54,9 +55,9 @@ The system is divided into four strictly isolated layers:
 
 ### Module 4: Agentic LLM & RAG (`src/agent`)
 **Function:** Acts as the analytical "Brain" of the system, interpreting data and suggesting policy.
-*   **`rag_ingest.py`:** Chunks NITI Aayog policy PDF documents using LangChain document loaders, embeds them using an open-source sentence transformer, and loads them into the Qdrant vector database.
+*   **`ingest_docs.py`:** Chunks NITI Aayog policy PDF documents, embeds them using a sentence-transformer model, and loads them into the Qdrant vector database.
 *   **`llm_agent.py`:** 
-    *   *Logic:* Implements a ReAct (Reasoning + Acting) Agent using `LiteLLM` (allowing seamless switching between Local Ollama and Cloud Gemini APIs).
+*   *Logic:* Implements a LangChain tool-calling agent supporting Local Ollama and Cloud Gemini APIs.
     *   *Tools Provided to Agent:*
         1.  `Text-to-SQL`: Given a natural language question ("What was the MGNREGA demand in Anantapur in 2019?"), the agent writes a PostgreSQL query, executes it against the PostGIS database, and reads the result.
         2.  `Policy-Search`: Executes a semantic vector search against Qdrant to retrieve policy recommendations.

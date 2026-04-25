@@ -10,7 +10,7 @@ IndiSight-Nowcast addresses the "data-lag" problem in Indian governance. While o
 ## Tech Stack
 - **Data:** NITI Aayog NDAP (Tabular), Sentinel-2 (Optical), VIIRS (Nightlights).
 - **ML/AI:** XGBoost, PyTorch (Vision Transformers), SHAP (Explainability).
-- **Databases:** PostGIS (Spatial-Relational), ChromaDB (Vector/RAG).
+- **Databases:** PostGIS (Spatial-Relational), Qdrant (Vector/RAG).
 - **Agentic Layer:** LangChain-based SQL + Tool-calling Agent.
 - **Frontend:** Streamlit.
 

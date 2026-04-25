@@ -22,7 +22,7 @@ To ensure flawless presentation on a standard laptop, **all heavy dimensionality
 **Goal:** Establish clean, spatially aligned ground-truth data and extract satellite patches.
 
 *   **Task 1.1: Universal Logger & Loader (Member B)**
-    *   *File:* `src/utils/logger.py` & `src/data_engine/ndap_loader.py`
+    *   *File:* `src/utils/logger.py` & `src/data_engine/ingest_tabular.py`
     *   *Spec:* Build a cross-platform logger. Build a Pandas loader that automatically cleans headers and applies the `TRU == 'Total'` filter.
 *   **Task 1.2: Comprehensive EDA (Member B)**
     *   *File:* `notebooks/01_ndap_eda.ipynb`
@@ -34,7 +34,7 @@ To ensure flawless presentation on a standard laptop, **all heavy dimensionality
     *   *File:* `src/data_engine/extract_gee.py`
     *   *Spec:* Calculate district centroids. Draw 5x5 km bounding boxes. Batch download cloud-free median composites of Sentinel-2 (Optical) and VIIRS (Nightlights). Save as `.tif` in `data/processed/images/`.
 *   **Task 1.5: PostGIS Ingestion (Member B)**
-    *   *File:* `src/data_engine/ingest_ndap.py`
+    *   *File:* `src/data_engine/seed_postgis.py`
     *   *Spec:* Create SQLAlchemy tables (`spatial_boundaries`, `ndap_nfhs_metrics`, `ndap_mgnrega_metrics`). Push cleaned DataFrames into the local Dockerized PostgreSQL instance.
 
 ### Phase 2: Multi-Modal Machine Learning & Benchmarking
@@ -60,7 +60,7 @@ To ensure flawless presentation on a standard laptop, **all heavy dimensionality
 **Goal:** Build the LLM co-pilot capable of SQL queries and policy retrieval.
 
 *   **Task 3.1: RAG Ingestion (Member B)**
-    *   *File:* `src/agent/rag_ingest.py`
+    *   *File:* `src/agent/ingest_docs.py`
     *   *Spec:* Parse NITI Aayog PDF reports. Chunk text, generate embeddings using a lightweight SentenceTransformer, and store in Qdrant Vector DB.
 *   **Task 3.2: LLM Agent Architecture (Member B)**
     *   *File:* `src/agent/llm_agent.py`
@@ -83,12 +83,12 @@ To ensure flawless presentation on a standard laptop, **all heavy dimensionality
 ## 4. Weekly Execution Sprint Timeline
 
 ### Week 1: Infrastructure & Data Acquisition
-*   **Member B (`feat/data-ingestion`):** Setup Logger, build `ndap_loader.py`, run Comprehensive EDA Notebook. Define PostGIS schema and ingest NDAP CSVs and boundaries into Docker database.
+*   **Member B (`feat/data-ingestion`):** Setup Logger, build `ingest_tabular.py`, run Comprehensive EDA Notebook. Define PostGIS schema and ingest NDAP CSVs and boundaries into Docker database.
 *   **Member A (`feat/vision-pipeline`):** Authenticate with Google Earth Engine. Write and execute `extract_gee.py` to download all 5x5km district image patches.
 
 ### Week 2: Embeddings & DB Seeding (Integration Point 1)
 *   **Member A (`feat/vision-pipeline`):** Write PyTorch `vision_extractor.py`. Extract all raw embeddings. Run `pca_precompute.py`. Push the resulting `.parquet` files to the shared repo/drive.
-*   **Member B (`feat/data-ingestion`):** Begin `rag_ingest.py`. Load government PDFs into Qdrant. Verify PostGIS is successfully queried via standard SQL.
+*   **Member B (`feat/data-ingestion`):** Begin `ingest_docs.py`. Load government PDFs into Qdrant. Verify PostGIS is successfully queried via standard SQL.
 
 ### Week 3: Machine Learning & LLM Agent Logic
 *   **Member A (`feat/vision-pipeline`):** Build `benchmark_tracker.py` and `model_pipeline.py`. Run Phase A and Phase B automated training loops. Generate the final SHAP and Metric JSONs.

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 import pymupdf4llm
 from dotenv import load_dotenv
+import json
 from langchain_text_splitters import MarkdownTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore
@@ -48,6 +49,7 @@ class RAGIngestionPipeline:
         self.docs_dir = Path("data/raw/policy_docs")
         self.collection_name = "indisight_policies"
         self.reset_collection = reset_collection
+        self.checkpoint_file = Path("data/processed/ingest_checkpoint.json")
         
         self.qdrant_host = os.getenv("QDRANT_HOST", "localhost")
         self.qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
@@ -138,7 +140,25 @@ class RAGIngestionPipeline:
             logger.error("No PDFs found in data/raw/policy_docs.")
             return
 
-        logger.info(f"Found {len(pdf_files)} PDFs. Launching CPU Process Pool...")
+        # Checkpoint loading
+        processed_files = set()
+        if not self.reset_collection and self.checkpoint_file.exists():
+            try:
+                with open(self.checkpoint_file, "r") as f:
+                    processed_files = set(json.load(f))
+                logger.info(f"Loaded {len(processed_files)} processed files from checkpoint.")
+            except Exception as e:
+                logger.warning(f"Failed to load checkpoint: {e}")
+        elif self.reset_collection:
+            if self.checkpoint_file.exists():
+                self.checkpoint_file.unlink()
+
+        pdf_files = [p for p in pdf_files if p.name not in processed_files]
+        if not pdf_files:
+            logger.info("All PDFs have already been processed (based on checkpoint). Exiting.")
+            return
+            
+        logger.info(f"Found {len(pdf_files)} new PDFs to process. Launching CPU Process Pool...")
         
         # Leave 4 threads for the OS and GPU operations
         cpu_count = os.cpu_count() or 1
@@ -176,12 +196,28 @@ class RAGIngestionPipeline:
             
             # Send larger batches to fully saturate the GPU VRAM
             batch_size = 200 
+            successfully_processed_files = set()
+            
             for i in tqdm(range(0, len(all_docs_to_embed), batch_size), desc="Ingesting to Qdrant (GPU)"):
                 batch = all_docs_to_embed[i:i + batch_size]
                 self._retry(
                     f"Qdrant batch ingest [{i}:{i + len(batch)}]",
                     lambda b=batch: self.vector_store.add_documents(b),
                 )
+                
+                # Keep track of which files these chunks belonged to
+                for doc in batch:
+                    if doc.metadata and "source" in doc.metadata:
+                        successfully_processed_files.add(doc.metadata["source"])
+                
+            # Update checkpoint
+            processed_files.update(successfully_processed_files)
+            try:
+                with open(self.checkpoint_file, "w") as f:
+                    json.dump(list(processed_files), f)
+                logger.info(f"Updated checkpoint with {len(processed_files)} total files.")
+            except Exception as e:
+                logger.error(f"Failed to update checkpoint: {e}")
                 
             ingest_time = time.time() - batch_start
             logger.info(f"GPU Ingestion complete in {ingest_time:.2f} seconds.")

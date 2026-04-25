@@ -1,5 +1,6 @@
 import os
 import time
+import re
 from typing import Any
 from collections.abc import Iterator
 from dotenv import load_dotenv
@@ -21,9 +22,25 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.tools import create_retriever_tool
 
 from src.utils.logger import get_logger
+from src.data_engine.ingest_tabular import DataIngestionPipeline
 
 load_dotenv()
 logger = get_logger(module_name=__name__, log_sub_dir="agent")
+
+class SafeQuerySQLDatabaseTool(QuerySQLDatabaseTool):
+    """A wrapper for QuerySQLDatabaseTool that blocks destructive commands."""
+    def _run(self, query: str, run_manager=None) -> Any:
+        forbidden_pattern = re.compile(r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|GRANT|REVOKE)\b", re.IGNORECASE)
+        if forbidden_pattern.search(query):
+            logger.warning(f"Blocked destructive SQL query: {query}")
+            return "Error: Destructive SQL operations are not allowed. Please only use SELECT."
+        
+        try:
+            return super()._run(query, run_manager)
+        except Exception as e:
+            logger.error(f"SQL execution error: {e}")
+            return f"Error executing query: {str(e)}"
+
 
 
 class IndiSightAgent:
@@ -104,7 +121,7 @@ class IndiSightAgent:
         sql_tools =[
             ListSQLDatabaseTool(db=self.db),
             InfoSQLDatabaseTool(db=self.db),
-            QuerySQLDatabaseTool(db=self.db),
+            SafeQuerySQLDatabaseTool(db=self.db),
         ]
         self.tools.extend(sql_tools)
 
@@ -148,7 +165,14 @@ class IndiSightAgent:
         - If the user asks about rules, guidelines, definitions, or strategies, use the `search_policy_documents` tool.
         - Always explain your reasoning clearly and cite the data source.
         - Return ONLY your final textual answer to the user.
+        
+        Data Dictionary (Metric Mapping):
+        The following mapping maps long descriptions to the internal 'metric_name' used in the database. Use this to translate natural language questions into the correct database columns:
         """
+        
+        mapping = DataIngestionPipeline().metric_mapping
+        dict_str = "\n".join([f"- {v}: represents {k.replace('_', ' ')}" for k, v in mapping.items()])
+        system_prompt += f"\n{dict_str}\n"
 
         self.agent_executor = create_agent(
             model=self.llm,

@@ -1,6 +1,7 @@
 import os
 import time
 from pathlib import Path
+from typing import Any
 import pymupdf4llm
 from dotenv import load_dotenv
 from langchain_text_splitters import MarkdownTextSplitter
@@ -19,10 +20,24 @@ logger = get_logger(module_name=__name__, log_sub_dir="agent")
 # Standalone worker function for Multiprocessing
 # Must be outside the class to avoid Pickling errors
 # ---------------------------------------------------------
-def extract_markdown_worker(pdf_path: Path):
+def extract_markdown_worker(pdf_path: Path) -> tuple[str, str | None, str | None]:
     """CPU-bound task to extract Markdown from a PDF."""
     try:
-        md_text = pymupdf4llm.to_markdown(str(pdf_path))
+        md_raw: Any = pymupdf4llm.to_markdown(str(pdf_path))
+        if isinstance(md_raw, str):
+            md_text = md_raw
+        elif isinstance(md_raw, list):
+            text_parts = []
+            for block in md_raw:
+                if isinstance(block, dict):
+                    text_value = block.get("text")
+                    if text_value:
+                        text_parts.append(str(text_value))
+                elif isinstance(block, str):
+                    text_parts.append(block)
+            md_text = "\n".join(text_parts)
+        else:
+            md_text = str(md_raw)
         return pdf_path.name, md_text, None
     except Exception as e:
         return pdf_path.name, None, str(e)
@@ -87,7 +102,8 @@ class RAGIngestionPipeline:
         logger.info(f"Found {len(pdf_files)} PDFs. Launching CPU Process Pool...")
         
         # Leave 4 threads for the OS and GPU operations
-        max_cpu_workers = max(1, os.cpu_count() - 4) 
+        cpu_count = os.cpu_count() or 1
+        max_cpu_workers = max(1, cpu_count - 4)
         
         all_docs_to_embed =[]
         start_time = time.time()
@@ -106,7 +122,7 @@ class RAGIngestionPipeline:
                 if md_text and len(md_text.strip()) > 0:
                     # Chunking is fast enough for the main thread
                     chunks = self.splitter.create_documents(
-                        texts=[md_text],
+                        texts=[str(md_text)],
                         metadatas=[{"source": name, "type": "policy_doc"}]
                     )
                     all_docs_to_embed.extend(chunks)

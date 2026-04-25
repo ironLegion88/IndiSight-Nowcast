@@ -15,6 +15,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 # Import our Agent
 from src.agent.llm_agent import IndiSightAgent
+from src.utils.logger import get_logger
+
+logger = get_logger(module_name=__name__, log_sub_dir="app")
 
 # --- Configuration & Styling ---
 st.set_page_config(page_title="IndiSight Nowcast", layout="wide")
@@ -32,6 +35,7 @@ st.markdown("""
 @st.cache_data
 def load_data():
     """Loads and caches tabular and spatial data."""
+    logger.info("Loading dashboard data artifacts from data/processed...")
     processed_dir = PROJECT_ROOT / "data" / "processed"
     
     # Load Long Tabular Data
@@ -42,12 +46,14 @@ def load_data():
     
     # Pre-compute available metrics
     available_metrics = sorted(nfhs_long['metric_name'].unique().tolist())
-    
+    logger.info(f"Loaded dashboard data: nfhs_long={len(nfhs_long)} rows, metrics={len(available_metrics)}")
+
     return nfhs_long, gdf, available_metrics
 
 @st.cache_resource
 def get_agent():
     """Initializes the LangChain Agent once."""
+    logger.info("Initializing cached IndiSight agent for Streamlit session")
     return IndiSightAgent(llm_mode="gemini")
 
 @st.cache_data
@@ -73,7 +79,7 @@ def list_eda_artifacts():
     trend_files = sorted([p.name for p in artifact_dir.glob("trend_*.json")])
     ranking_files = sorted([p.name for p in artifact_dir.glob("ranking_*.json")])
     scatter_files = sorted([p.name for p in artifact_dir.glob("scatter_*.json")])
-    return {
+    artifacts = {
         "map_files": map_files,
         "drift_files": drift_files,
         "distribution_files": distribution_files,
@@ -87,6 +93,52 @@ def list_eda_artifacts():
         "outlier_csv": (artifact_dir / "outlier_summary_2019.csv"),
         "state_rankings_csv": (artifact_dir / "state_metric_rankings_2019.csv"),
     }
+    logger.info(
+        "EDA artifact scan complete: maps=%s drift=%s trend=%s distribution=%s ranking=%s scatter=%s",
+        len(map_files),
+        len(drift_files),
+        len(trend_files),
+        len(distribution_files),
+        len(ranking_files),
+        len(scatter_files),
+    )
+    return artifacts
+
+def validate_eda_contract(artifacts: dict) -> list[str]:
+    """Validate required EDA artifacts expected by the dashboard contract."""
+    missing = []
+
+    required_csv = {
+        "morans_csv": "morans_i_spatial_stats.csv",
+        "dataset_summary_csv": "eda_dataset_summary.csv",
+        "metric_quality_csv": "metric_quality_by_year.csv",
+        "missingness_csv": "metric_missingness.csv",
+        "outlier_csv": "outlier_summary_2019.csv",
+        "state_rankings_csv": "state_metric_rankings_2019.csv",
+    }
+
+    for key, name in required_csv.items():
+        path_obj = artifacts.get(key)
+        if not path_obj or not path_obj.exists():
+            missing.append(name)
+
+    if not load_plotly_artifact("correlation_heatmap.json"):
+        missing.append("correlation_heatmap.json")
+
+    if not artifacts.get("map_files"):
+        missing.append("map_*.json")
+    if not artifacts.get("drift_files"):
+        missing.append("drift_box_*.json")
+    if not artifacts.get("trend_files"):
+        missing.append("trend_*.json")
+    if not artifacts.get("distribution_files"):
+        missing.append("distribution_*.json")
+    if not artifacts.get("ranking_files"):
+        missing.append("ranking_*.json")
+    if not artifacts.get("scatter_files"):
+        missing.append("scatter_*.json")
+
+    return missing
 
 # --- Initialization ---
 nfhs_long, gdf, available_metrics = load_data()
@@ -188,6 +240,7 @@ with tab_chat:
     # Process queued prompt before rendering the input widget so the input stays at the bottom.
     if st.session_state.pending_prompt:
         prompt = st.session_state.pending_prompt
+        logger.info("Processing queued assistant prompt")
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 response = ""
@@ -212,6 +265,7 @@ with tab_chat:
                 if not response:
                     response = "I didn't receive a response from the agent."
                     answer_placeholder.markdown(response)
+                logger.info("Assistant response generated")
 
         st.session_state.messages.append(
             {"role": "assistant", "content": response, "thinking": thinking}
@@ -223,6 +277,7 @@ with tab_chat:
     if prompt := st.chat_input("Ask about NDAP data or PMGSY guidelines..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.session_state.pending_prompt = prompt
+        logger.info("Queued user prompt for assistant processing")
         st.rerun()
 
 # -----------------------------------------
@@ -231,6 +286,15 @@ with tab_chat:
 with tab_eda:
     st.subheader("Exploratory Data Analysis")
     artifacts = list_eda_artifacts()
+    contract_missing = validate_eda_contract(artifacts)
+
+    if contract_missing:
+        logger.warning(f"EDA contract missing artifacts: {contract_missing}")
+        st.warning(
+            "EDA artifact contract is incomplete. Missing: "
+            + ", ".join(contract_missing)
+            + ". Run the EDA pipeline to regenerate full coverage."
+        )
 
     st.caption(
         (

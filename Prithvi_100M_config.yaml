@@ -1,0 +1,19 @@
+model_args:
+  img_size: 224
+  patch_size: 16
+  in_chans: 6
+  embed_dim: 768
+  depth: 12
+  num_heads: 12
+  decoder_embed_dim: 512
+  decoder_depth: 8
+  decoder_num_heads: 16
+  mlp_ratio: 4
+  num_frames: 3
+  tubelet_size: 1
+
+spectral_metadata:
+  bands: ["Blue", "Green", "Red", "NIR", "SWIR-1", "SWIR-2"]
+  # Global HLS Training Statistics
+  training_mean: [775.23, 1081.00, 1228.59, 2497.20, 2204.21, 1610.83]
+  training_std: [1281.53, 1270.03, 1399.48, 1368.34, 1291.68, 1154.51]

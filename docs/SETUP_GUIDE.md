@@ -1,19 +1,18 @@
 # IndiSight-Nowcast: System Setup Guide
 
-This guide provides step-by-step instructions to set up the IndiSight-Nowcast project on a fresh machine (Windows, macOS, or Linux). It covers both standard hardware (CPU-only) setups and high-end workstations (NVIDIA GPUs).
+This guide provides step-by-step instructions to set up the IndiSight-Nowcast project. It is specifically tailored for **Member A (ML/Vision Workstation)** and **Member B (App/Agent Node)**.
 
 ## Phase 1: System Prerequisites
 
-Before touching the code, ensure the following system-level dependencies are installed:
+Ensure the following system-level dependencies are installed:
 
 1. **Git:** [Download Git](https://git-scm.com/downloads)
-2. **Docker Desktop:** Required for the local PostGIS and Qdrant databases.
-   * [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
-   * *Windows Users:* Ensure WSL2 (Windows Subsystem for Linux) is enabled in Docker settings.
+2. **Docker Desktop:** Required for PostGIS and Qdrant.
+   - [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
+   - *Windows Users:* Ensure WSL2 is enabled in Docker settings.
 3. **Pixi:** The package manager used for the project.
-   * *Windows (PowerShell):* `irm -useb https://pixi.sh/install.ps1 | iex`
-   * *Linux/macOS (Bash):* `curl -fsSL https://pixi.sh/install.sh | sh`
-   * *Note: Restart your terminal after installing Pixi.*
+   - *Windows (PowerShell):* `irm -useb https://pixi.sh/install.ps1 | iex`
+   - *Linux/macOS (Bash):* `curl -fsSL https://pixi.sh/install.sh | sh`
 
 ---
 
@@ -25,87 +24,104 @@ Before touching the code, ensure the following system-level dependencies are ins
    cd IndiSight-Nowcast
    ```
 
-2. **Install the Python Environment (Pixi):**
-   Pixi handles all Python versions, PyTorch binaries, and geospatial libraries automatically.
-
-   * **For Standard Laptops / Member B (CPU Only):**
-     ```bash
-     pixi install
-     ```
-   
-   * **For the ML Workstation / Member A (NVIDIA GPUs):**
+2. **Install the Environment:**
+   - **Member A (NVIDIA GPU Workstation):**
      ```bash
      pixi install -e gpu
      ```
+   - **Member B (Standard Laptop):**
+     ```bash
+     pixi install
+     ```
 
 ---
 
-## Phase 3: Infrastructure (Databases)
+## Phase 3: Infrastructure & Environment
 
-We will use Docker Compose to run PostgreSQL (with PostGIS) and Qdrant locally.
-
-1. Ensure **Docker Desktop** is open and running in the background.
-2. Start the databases using the predefined Pixi task:
+1. **Start Databases:**
    ```bash
    pixi run start-db
    ```
-   *(To stop them later, you can run `pixi run stop-db`)*
+   *Verify Qdrant at `http://localhost:6333/dashboard`.*
 
-3. **Verify Databases are Running:**
-   * PostGIS: `localhost:5432`
-   * Qdrant Dashboard: Open `http://localhost:6333/dashboard` in your browser.
-
----
-
-## Phase 4: Environment Variables (.env)
-
-The project requires specific API keys for the LLM Agent and Google Earth Engine. 
-
-1. Create a file named `.env` in the root directory:
-   ```bash
-   touch .env
-   ```
-2. Add the following configurations to the `.env` file:
+2. **Setup Environment Variables (`.env`):**
+   Create a `.env` file in the root with:
    ```env
-   # Database Configurations (Matches docker-compose.yml)
    POSTGRES_USER=postgres
    POSTGRES_PASSWORD=postgres
    POSTGRES_DB=indisight_db
    POSTGRES_HOST=localhost
    POSTGRES_PORT=5432
-
    QDRANT_HOST=localhost
    QDRANT_PORT=6333
-
-   # LLM API Keys (For Member B)
-   # Get a free key from Google AI Studio
-   GEMINI_API_KEY=your_gemini_api_key_here
-   
-   # Groq API Key (Optional, for blazing fast Llama-3 inference)
-   GROQ_API_KEY=your_groq_api_key_here
+   GEMINI_API_KEY=your_key
    ```
 
 ---
 
-## Phase 5: Verification & Workflows
+## Phase 4: Data Initialization (Member B Tasks)
 
-To ensure everything is installed correctly, run the following tests:
+Member A needs to run these scripts once to populate the local environment with Member B's data artifacts:
 
-**1. Test the UI (Streamlit):**
-```bash
-pixi run ui
-```
-*This should open a blank or placeholder Streamlit app in your browser at `localhost:8501`.*
-
-**2. Authenticate Google Earth Engine (Member A Only):**
-If you are running the satellite extraction scripts, you must authenticate with Google:
-```bash
-pixi run -e gpu earthengine authenticate
-```
+1. **Ingest Tabular Data:**
+   ```bash
+   pixi run ingest-tabular
+   ```
+2. **Seed PostGIS Database:**
+   ```bash
+   pixi run seed-db
+   ```
+3. **Ingest Policy RAG (Uses GPU if in `-e gpu`):**
+   ```bash
+   pixi run ingest-rag
+   ```
+4. **Generate EDA Artifacts:**
+   ```bash
+   pixi run eda
+   ```
 
 ---
 
-## Git Branching Reminder
-Never work directly on the `main` branch! 
-* **Data/ML Tasks (Member A):** `git checkout feat/vision-pipeline`
-* **App/DB Tasks (Member B):** `git checkout feat/data-ingestion`
+## Phase 5: Member A Artifact Contract (CRITICAL)
+
+The application node (Member B) expects your ML outputs in a specific "Benchmark Registry" format. To enable the advanced UI features (SHAP, Delta Maps), you **MUST** deliver your results in the following structure:
+
+**Directory Path:** `data/processed/benchmarks/<run_id>/`
+
+### Required Files:
+1. **`metrics.json`**:
+   ```json
+   { "R2": 0.85, "MAE": 1.2, "RMSE": 2.1 }
+   ```
+2. **`predictions.parquet`**:
+   Must contain columns: `district_lgd_code`, `actual`, `predicted`, `delta`.
+3. **`shap_summary.json`**:
+   A mapping of `district_lgd_code` (as string) to a list of feature importance objects:
+   ```json
+   {
+     "502": [
+       {"feature": "Nightlight", "shap_value": 1.5},
+       {"feature": "Built-Up Area", "shap_value": -0.3}
+     ]
+   }
+   ```
+
+---
+
+## Phase 6: Verification & Testing
+
+1. **Run the UI:**
+   ```bash
+   pixi run ui
+   ```
+2. **Verify Integration:**
+   - In the "3D Spatial View" tab, ensure the map renders correctly.
+   - If you have placed a valid benchmark run in `data/processed/benchmarks/`, the "Vision Model" sliders will unlock automatically.
+   - Check the "AI Policy Assistant" tab and ask: "Which district has the highest electricity coverage?" to test the agent's SQL guardrails.
+
+## Phase 7: Troubleshooting (GPU)
+
+If `torch` does not detect your GPU:
+- Run `pixi run python -c "import torch; print(torch.cuda.is_available())"`.
+- Ensure you are using the `-e gpu` environment.
+- Check that your NVIDIA drivers are up to date (550+ recommended for CUDA 12.1).

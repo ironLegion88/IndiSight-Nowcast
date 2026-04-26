@@ -11,6 +11,10 @@ stop-db = "docker compose stop"
 down-db = "docker-compose down"
 ui = "streamlit run app/main.py"
 jupyter = "jupyter lab"
+ingest-tabular = "python -m src.data_engine.ingest_tabular"
+ingest-rag = "python -m src.agent.ingest_docs"
+eda = "python -m src.data_engine.eda_pipeline"
+seed-db = "python -m src.data_engine.seed_postgis"
 
 [dependencies]
 python = "3.10.*"

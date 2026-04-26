@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndiSight-Nowcast | Project Report</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
+    <style>
+        body { max-width: 900px; line-height: 1.6; }
+        .hero { background: #f4f4f4; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        img { width: 100%; border-radius: 5px; border: 1px solid #ddd; }
+        .badge { background: #003366; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>IndiSight-Nowcast</h1>
+        <p><strong>Spatio-Temporal District Reconstruction via Prithvi-100M</strong></p>
+        <p><em>Ashoka University | Data Science and Management</em></p>
+        <p>Contributors: <strong>Shubham Agarwal</strong> & <strong>Sarthak Rathi</strong></p>
+        <p>Instructor: <strong>Prof. Lipika Dey</strong></p>
+    </div>
+
+    <h2>1. Project Utility</h2>
+    <p>IndiSight-Nowcast is a specialized geospatial tool designed to fill temporal gaps in satellite data. By predicting the biophysical state of Indian districts based on historical trends, it enables continuous agricultural and environmental monitoring even when real-time data is unavailable.</p>
+
+    <h2>2. Unified Development Workflow</h2>
+    <p>The project was executed across two specialized development streams:</p>
+    <ul>
+        <li><strong>The Vision Pipeline:</strong> Focused on the ViT architecture, HPC stability, and radiometric scaling.</li>
+        <li><strong>Analytical Framework:</strong> Focused on district-wise trend analysis and socio-economic interpretation.</li>
+    </ul>
+
+    <h2>3. Technical Implementation (HPC & ViT)</h2>
+    <p>Using the university's HPC cluster, we deployed the Prithvi-100M model using a 3-frame temporal window. Key hurdles included solving the "quilt" artifacting issue through custom spatial decoding and performing inverse Z-score normalization to restore data to physical reflectance units (0-4000).</p>
+
+    <div class="grid">
+        <div>
+            <img src="assets/Figure_1.jpg" alt="District Reconstruction">
+            <p><small><strong>Fig 1:</strong> Reconstructed morphology of the target district.</small></p>
+        </div>
+        <div>
+            <img src="assets/Figure_2.jpg" alt="NIR Comparison">
+            <p><small><strong>Fig 2:</strong> Spectral fidelity analysis for the NIR band.</small></p>
+        </div>
+    </div>
+
+    <h2>4. Analytical Results</h2>
+    <p><em>(Sarthak: Content from your branch on district trends and socio-economic analysis will be integrated here.)</em></p>
+
+    <hr>
+    <p><a href="https://github.com/ironLegion88/IndiSight-Nowcast/tree/feat/vision-pipeline">View Vision Pipeline Code</a> | 
+       <a href="https://github.com/ironLegion88/IndiSight-Nowcast">Main Repository</a></p>
+</body>
+</html>

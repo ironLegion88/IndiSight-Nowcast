@@ -9,13 +9,11 @@ venv/
 __pycache__/
 
 # Data and Models
-data/raw/*
-data/processed/*
+data/processed/images/*
+data/raw/policy_docs/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 *.parquet
-*.csv
-*.geojson
 *.h5
 *.pt
 *.pth

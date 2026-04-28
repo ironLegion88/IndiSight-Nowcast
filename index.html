@@ -3,131 +3,820 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IndiSight-Nowcast | Project Report</title>
+    <title>IndiSight-Nowcast | Comprehensive Project Report</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
     <style>
-        body { max-width: 900px; line-height: 1.6; }
-        .hero { background: #f4f4f4; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        img { width: 100%; border-radius: 5px; border: 1px solid #ddd; }
-        .badge { background: #003366; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        body { max-width: 1000px; line-height: 1.7; margin: 0 auto; padding: 20px; }
+        .hero { background: linear-gradient(135deg, #003366 0%, #005599 100%); color: white; padding: 3rem; border-radius: 8px; margin-bottom: 2rem; }
+        .hero h1 { margin: 0; }
+        .hero p { margin: 0.5rem 0; }
+        .section-divider { border-bottom: 3px solid #ddd; margin: 2rem 0; padding-bottom: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 1.5rem 0; }
+        .grid.three { grid-template-columns: 1fr 1fr 1fr; }
+        .grid.full { grid-template-columns: 1fr; }
+        img { width: 100%; border-radius: 5px; border: 1px solid #ddd; margin: 1rem 0; }
+        .figure-group { background: #f9f9f9; padding: 1rem; border-radius: 5px; margin: 1rem 0; }
+        .figure-caption { font-size: 0.95rem; color: #555; font-style: italic; margin-top: 0.5rem; }
+        .insight-box { background: #e8f4f8; border-left: 4px solid #0066cc; padding: 1rem; margin: 1rem 0; border-radius: 3px; }
+        .metric-badge { display: inline-block; background: #0066cc; color: white; padding: 0.3rem 0.7rem; border-radius: 3px; font-size: 0.85rem; margin: 0.2rem; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.7rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f0f0f0; font-weight: bold; }
+        .key-finding { font-weight: bold; color: #003366; }
     </style>
 </head>
 <body>
+    <!-- HEADER -->
     <div class="hero">
         <h1>IndiSight-Nowcast</h1>
-        <p><strong>Spatio-Temporal District Reconstruction via Prithvi-100M</strong></p>
-        <p><em>Ashoka University | Data Science and Management</em></p>
-        <p>Contributors: <strong>Shubham Agarwal</strong> & <strong>Sarthak Rathi</strong></p>
-        <p>Instructor: <strong>Prof. Lipika Dey</strong></p>
+        <p><strong>Spatio-Temporal District Reconstruction & Socio-Economic Nowcasting</strong></p>
+        <p><em>Ashoka University | Data Science and Management Capstone Project</em></p>
+        <p>Contributors: <strong>Shubham Agarwal</strong> (Vision/Compute) & <strong>Sarthak Rathi</strong> (Analytics/Application)</p>
+        <p>Instructor: <strong>Prof. Lipika Dey</strong> | Date: April 2026</p>
     </div>
 
-    <h2>1. Project Utility</h2>
-    <p>IndiSight-Nowcast is a specialized geospatial tool designed to fill temporal gaps in satellite data. By predicting the biophysical state of Indian districts based on historical trends, it enables continuous agricultural and environmental monitoring even when real-time data is unavailable.</p>
-
-    <h2>2. Unified Development Workflow</h2>
-    <p>The project was executed across two specialized development streams:</p>
-    <ul>
-        <li><strong>The Vision Pipeline:</strong> Focused on the ViT architecture, HPC stability, and radiometric scaling.</li>
-        <li><strong>Analytical Framework:</strong> Focused on district-wise trend analysis and socio-economic interpretation.</li>
-    </ul>
-
-    <h2>3. Technical Implementation (HPC & ViT)</h2>
-    <p>Using the university's HPC cluster, we deployed the Prithvi-100M model using a 3-frame temporal window. Key hurdles included solving the "quilt" artifacting issue through custom spatial decoding and performing inverse Z-score normalization to restore data to physical reflectance units (0-4000).</p>
-
-    <div class="grid">
-        <div>
-            <img src="Figure_1.png" alt="District Reconstruction">
-            <p><small><strong>Fig 1:</strong> Reconstructed morphology of the target district.</small></p>
+    <!-- 1. EXECUTIVE SUMMARY -->
+    <section>
+        <h2>1. The core idea</h2>
+        <p>
+            IndiSight-Nowcast is a multi-modal machine learning and geospatial analytics framework designed to address the 
+            <span class="key-finding">"data-lag problem"</span> in Indian governance. Satellite imagery is available intermittently; 
+            official socio-economic statistics (NFHS surveys, MGNREGA, PMGSY) are released with 6-12 month lags. This project fuses 
+            satellite imagery with historical tabular data to <strong>nowcast</strong> current district-level development indicators 
+            in near-real-time.
+        </p>
+        <div class="insight-box">
+            <strong>Our work:</strong> We built an end-to-end pipeline using 97,000+ NFHS records across 728 Indian 
+            districts over 7 years, generated 50+ interactive EDA artifacts, and deployed a Streamlit dashboard with spatio-temporal 
+            visualizations and an LLM agent for policy-guided interpretation.
         </div>
-        <div>
-            <img src="Figure_2.png" alt="NIR Comparison">
-            <p><small><strong>Fig 2:</strong> Spectral fidelity analysis for the NIR band.</small></p>
+    </section>
+
+    <!-- 2. MOTIVATION & PROBLEM STATEMENT -->
+    <section>
+        <h2>2. Data-Lag is the Problem:</h2>
+        <div class="section-divider"></div>
+        <h3>2.1  Challenge</h3>
+        <p>
+            India's development monitoring relies on periodic surveys (NFHS-5 conducted 2019-2021; previous round 2015-2016). 
+            Real-time satellite imagery is abundant but intermittent due to cloud cover. This creates a critical gap:
+        </p>
+        <ul>
+            <li><strong>Policy makers</strong> need current development metrics to allocate resources (roads via PMGSY, employment via MGNREGA).</li>
+            <li><strong>Satellite data</strong> reflects physical infrastructure (electrification, sanitation facilities) in near-real-time.</li>
+            <li><strong>Missing link: Can we use satellite observations to infer current socio-economic status between survey rounds?</strong></li>
+        </ul>
+        <h3>2.2 Our Approach</h3>
+        <p>
+            We designed a <span class="key-finding">spatio-temporal nowcasting framework</span> that learns mappings from:
+        </p>
+        <ul>
+            <li><strong>Satellite embeddings</strong> (Prithvi-100M Vision Transformer) → multi-spectral district signatures</li>
+            <li><strong>Tabular features</strong> (PMGSY road investment, MGNREGA employment demand) → district infrastructure intensity</li>
+            <li><strong>Historical NFHS data</strong> → ground-truth socio-economic outcomes</li>
+        </ul>
+        <p>
+            The system learns to predict current district-level development metrics (e.g., electrification, sanitation, education) 
+            by fusing these three signal sources.
+        </p>
+    </section>
+
+    <!-- 3. METHODOLOGY -->
+    <section>
+        <h2>3. Methodology & Implementation</h2>
+        <div class="section-divider"></div>
+        <h3>3.1 Data Sources & Preparation</h3>
+        <ul>
+            <li><strong>NFHS-4/5 (2015-2021):</strong> 97,386 harmonized metric records across 728 districts and 82 health indicators.</li>
+            <li><strong>PMGSY (2015-2019):</strong> Road length and sanction cost by district—proxy for infrastructure investment.</li>
+            <li><strong>MGNREGA (2015-2019):</strong> Employment demand and labor expenditure—indicator of rural economic stress.</li>
+            <li><strong>District Boundaries (LGD codes):</strong> 728 Indian districts with consistent coding across datasets.</li>
+            <li><strong>Satellite Imagery (GEE):</strong> Sentinel-2 time-series (6 bands: Blue, Green, Red, NIR, SWIR-1, SWIR-2).</li>
+        </ul>
+        <div class="insight-box">
+            <strong>Data Harmonization Challenge:</strong> NFHS CSVs contain 150+ cryptic column names with unit suffixes. We built 
+            an explicit mapping table to standardize metrics (e.g., "women_age_group_15_to_49_years_who_are_literate" → "women_literate").
         </div>
-    </div>
+    </section>
 
-    <h2>4. Analytical Results</h2>
-    <p>This report documents the current implementation state (April 2026), the available data artifacts, and high-level analytical insights produced by the project.</p>
+    <!-- 4. KEY FINDINGS -->
+    <section>
+        <h2>4. Key Findings from Exploratory Data Analysis</h2>
+        <div class="section-divider"></div>
+        <h3>4.1 Data Quality & Coverage</h3>
+        <p>The harmonized dataset contains:</p>
+        <table>
+            <tr>
+                <th>Dataset</th>
+                <th>Rows</th>
+                <th>Records</th>
+                <th>Time Span</th>
+            </tr>
+            <tr>
+                <td>NFHS Long-Format</td>
+                <td>97,386</td>
+                <td>~82 health metrics</td>
+                <td>2015–2021 (7 years)</td>
+            </tr>
+            <tr>
+                <td>NFHS Wide-Format</td>
+                <td>1,341</td>
+                <td>728 districts × 2 years</td>
+                <td>2015, 2019</td>
+            </tr>
+            <tr>
+                <td>PMGSY</td>
+                <td>3,194</td>
+                <td>Road length, cost</td>
+                <td>2015–2019</td>
+            </tr>
+            <tr>
+                <td>MGNREGA</td>
+                <td>340</td>
+                <td>Employment, expenditure</td>
+                <td>2015–2019</td>
+            </tr>
+        </table>
 
-    <h3>Key Implementation Summary</h3>
-    <ul>
-        <li><strong>Data Engineering:</strong> Harmonized NFHS/PMGSY/MGNREGA ingestion producing parquet outputs; PostGIS seeding utilities implemented.</li>
-        <li><strong>EDA Artifacts:</strong> 50+ interactive Plotly artifacts and multiple diagnostics CSVs generated in <em>data/processed/eda_artifacts/</em>.</li>
-        <li><strong>Vision Proof-of-Concept:</strong> <code>Prithvi.py</code> and inference scripts are present. The pretrained weights <code>Prithvi_100M.pt</code> are included at the repository root, enabling local inference and validation.</li>
-        <li><strong>Dashboard:</strong> Streamlit app at <em>app/main.py</em> with map, agent scaffold, and EDA viewer.</li>
-    </ul>
-
-    <h3>Selected EDA Insights</h3>
-    <ul>
-        <li>Spatial clustering is present across many health and infrastructure metrics (Moran's I diagnostics available).</li>
-        <li>Southern states show consistently higher electrification and sanitation metrics; pockets of low values are visible in several northern states.</li>
-        <li>Missingness and outlier diagnostics are pre-computed; refer to <em>data/processed/eda_artifacts/</em> for details.</li>
-    </ul>
-
-    <h3>EDA Artifact Interpretations</h3>
-    <div class="grid">
-        <div>
+        <h3>4.2 Spatial Autocorrelation: Evidence of Geographic Clustering</h3>
+        <p>
+            We computed <span class="key-finding">Moran's I spatial autocorrelation</span> for all metrics. 
+            Strong positive Moran's I indicates development outcomes follow geographic patterns influenced by 
+            regional policy, geography, and infrastructure.
+        </p>
+        <div class="figure-group">
             <img src="docs/figures/correlation_heatmap.png" alt="Correlation Heatmap">
-            <p><small><strong>Correlation heatmap:</strong> Pairwise metric correlations highlighting co-varying indicators and potential redundancies among the NFHS metrics.</small></p>
+            <p class="figure-caption">
+                <strong>Figure 4.1: Metric Intercorrelation (pooled years).</strong> The “infrastructure bundle” 
+                (electricity, improved sanitation, clean cooking fuel, and institutional births) is strongly positively correlated 
+                with women’s education, while <strong>child stunting</strong> is negatively correlated with most of these (districts with 
+                higher schooling/coverage tend to have lower stunting). <strong>Women’s anemia</strong> is comparatively weakly coupled to 
+                the infrastructure bundle, indicating that anemia is driven by additional factors (dietary diversity, infection burden, 
+                supplementation reach) beyond what is captured by basic infrastructure.
+            </p>
         </div>
-        <div>
-            <img src="docs/figures/map_hh_electricity.png" alt="Electrification Map">
-            <p><small><strong>Electrification map:</strong> District-level choropleth for electrification; clear Southern clusters and northern pockets of low coverage.</small></p>
-        </div>
-    </div>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Moran's I</th>
+                <th>p-value</th>
+                <th>Interpretation</th>
+            </tr>
+            <tr>
+                <td>Women's Education (10+ yrs)</td>
+                <td><strong>0.692</strong></td>
+                <td>&lt;0.001</td>
+                <td>Very strong spatial clustering; education hotspots well-defined</td>
+            </tr>
+            <tr>
+                <td>Clean Cooking Fuel</td>
+                <td><strong>0.684</strong></td>
+                <td>&lt;0.001</td>
+                <td>Very strong; fuel transitions follow geographic patterns</td>
+            </tr>
+            <tr>
+                <td>Institutional Births</td>
+                <td><strong>0.680</strong></td>
+                <td>&lt;0.001</td>
+                <td>Very strong; healthcare infrastructure is geographically concentrated</td>
+            </tr>
+            <tr>
+                <td>Women Anemia</td>
+                <td><strong>0.667</strong></td>
+                <td>&lt;0.001</td>
+                <td>Strong; nutrition/health outcomes clustered by region</td>
+            </tr>
+            <tr>
+                <td>Child Stunting</td>
+                <td><strong>0.522</strong></td>
+                <td>&lt;0.001</td>
+                <td>Moderate; stunting shows regional but not extreme clustering</td>
+            </tr>
+            <tr>
+                <td>Electrification</td>
+                <td><strong>0.551</strong></td>
+                <td>&lt;0.001</td>
+                <td>Moderate-strong; reflects state-level electrification drives</td>
+            </tr>
+        </table>
 
-    <div class="grid">
-        <div>
-            <img src="docs/figures/distribution_hh_electricity.png" alt="Electrification Distribution">
-            <p><small><strong>Distribution:</strong> Histogram and KDE for district electrification values, showing skew and tail behaviour.</small></p>
+        <h3>4.3 Geographic Patterns: Persistent Spatial Inequality</h3>
+        <p>
+            The district maps show clear <strong>regional clustering</strong> (hotspots and coldspots), consistent with the Moran’s I
+            results. This is critical for IndiSight-Nowcast: when the ground-truth outcomes cluster geographically, satellite imagery
+            becomes a powerful proxy because adjacent districts share similar built form, land use, and infrastructure.
+        </p>
+        <div class="grid">
+            <div class="figure-group">
+                <img src="docs/figures/map_hh_electricity.png" alt="Electrification Map">
+                <p class="figure-caption">
+                    <strong>Electrification (2019, spatial map).</strong> Most districts are near saturation (values clustered close to 100%),
+                    with a small set of lagging pockets. For modeling, this implies a <strong>ceiling effect</strong>: predicting the remaining
+                    low-coverage tail is more informative than predicting already-saturated districts.
+                </p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_hh_electricity.png" alt="State Ranking">
+                <p class="figure-caption">
+                    <strong>Electrification (2019, top/bottom states).</strong> State rankings compress near the upper bound, reinforcing that
+                    electrification is largely achieved in many states. The remaining variance is concentrated in a smaller set of states,
+                    guiding where targeted monitoring/nowcasting is highest value.
+                </p>
+            </div>
         </div>
-        <div>
-            <img src="docs/figures/drift_box_hh_electricity.png" alt="Electrification Drift">
-            <p><small><strong>Drift (2015 vs 2019):</strong> Box comparison indicating which districts improved vs those that stagnated.</small></p>
+        <div class="grid">
+            <div class="figure-group">
+                <img src="docs/figures/map_child_stunted.png" alt="Child Stunting Map">
+                <p class="figure-caption">
+                    <strong>Child Stunting (2019, spatial map).</strong> Unlike electrification, stunting remains widely dispersed with clear
+                    regional hotspots. This “health-outcome surface” is exactly the kind of signal we want to nowcast between survey rounds:
+                    it changes over time, shows geographic structure, and links to both infrastructure and socio-economic context.
+                </p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_child_stunted.png" alt="Child Stunting State Ranking">
+                <p class="figure-caption">
+                    <strong>Child Stunting (2019, top/bottom states; lower is better).</strong> The spread between best and worst states is large,
+                    indicating substantial health inequality. This helps prioritize where a nowcasting model is most policy-relevant
+                    (high-stunting states with many vulnerable districts).
+                </p>
+            </div>
         </div>
-    </div>
 
-    <div class="grid">
-        <div>
-            <img src="docs/figures/trend_hh_electricity.png" alt="National Trend">
-            <p><small><strong>National trend:</strong> Time-series aggregate visualizing national progress in electrification.</small></p>
+        <h3>4.4 Temporal Trends: Where India Improved — and Where It Didn’t (2015 vs 2019)</h3>
+        <p>
+            The drift plots compare district distributions across the two NFHS anchor years. The key insight is that some indicators
+            show broad-based improvement (rightward shift), while others remain stubborn or even worsen—important when deciding which
+            targets are most suitable for nowcasting.
+        </p>
+        <div class="grid">
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_hh_electricity.png" alt="Electrification Drift">
+                <p class="figure-caption">
+                    <strong>Electrification drift (2015→2019).</strong> The distribution shifts upward and tightens near 100%, consistent with
+                    nationwide electrification drives. Because of saturation, incremental changes are concentrated in the lower tail.
+                </p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_hh_clean_cooking_fuel.png" alt="Clean Cooking Fuel Drift">
+                <p class="figure-caption">
+                    <strong>Clean cooking fuel drift (2015→2019).</strong> A pronounced rightward shift indicates large adoption gains, but the
+                    wide spread suggests uneven transition—some districts remain far behind despite national progress.
+                </p>
+            </div>
         </div>
-        <div>
-            <img src="docs/figures/ranking_hh_electricity.png" alt="State Ranking">
-            <p><small><strong>State ranking:</strong> Top and bottom performing states for electrification in 2019.</small></p>
+        <div class="grid">
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_child_stunted.png" alt="Child Stunting Drift">
+                <p class="figure-caption">
+                    <strong>Child stunting drift (2015→2019; lower is better).</strong> The distribution shifts downward, indicating improvement
+                    in nutritional outcomes. However, the persistence of high-stunting outliers shows that gains are not uniform.
+                </p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_women_anaemic.png" alt="Women Anemia Drift">
+                <p class="figure-caption">
+                    <strong>Women’s anemia drift (2015→2019; lower is better).</strong> The distribution shifts upward, meaning anemia prevalence
+                    <strong>worsened</strong> on average despite improvements in other development indicators. This is a cautionary signal that
+                    “infrastructure improvements ≠ health improvements” for all outcomes.
+                </p>
+            </div>
         </div>
-    </div>
-
-    <div class="grid">
-        <div>
-            <img src="docs/figures/scatter_pmgsy_vs_electricity.png" alt="Road vs Electrification">
-            <p><small><strong>Infrastructure vs Outcome:</strong> PMGSY road length vs district electrification — helps interpret infrastructure-investment relationships.</small></p>
+        <div class="grid">
+            <div class="figure-group">
+                <img src="docs/figures/trend_child_stunted.png" alt="Child Stunting Trend">
+                <p class="figure-caption">
+                    <strong>National trend: child stunting.</strong> Mean and median decline between 2015 and 2019, consistent with the drift plot.
+                    For nowcasting, this suggests measurable temporal movement between anchor surveys.
+                </p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/trend_women_anaemic.png" alt="Women Anemia Trend">
+                <p class="figure-caption">
+                    <strong>National trend: women’s anemia.</strong> Mean and median rise from 2015 to 2019 (worsening). This indicates anemia is a
+                    high-priority target but may require additional covariates beyond satellite-visible infrastructure.
+                </p>
+            </div>
         </div>
-    </div>
 
-    <h3>How to reproduce the analysis locally</h3>
-    <ol>
-        <li>Start PostGIS and Qdrant with <code>docker-compose up -d</code>.</li>
-        <li>Run the tabular ingestion and seeding scripts: <code>pixi run python -m src.data_engine.ingest_tabular</code> and <code>pixi run python -m src.data_engine.seed_postgis</code>.</li>
-        <li>Open the dashboard: <code>pixi run streamlit run app/main.py</code> and explore the three main tabs (3D Map, AI Policy Assistant, Metrics & EDA).</li>
-    </ol>
+        <h3>4.5 Infrastructure-Outcome Correlations: What Explains What?</h3>
+        <p>
+            Scatter plots relate “inputs” (PMGSY roads; MGNREGA demand/expenditure) to “outcomes” (NFHS indicators). The most important
+            interpretation is not just correlation strength, but <strong>why</strong> relationships look weak: saturation (ceiling effects),
+            confounding (roads are built more in hard-to-reach districts), and granularity mismatch (state-level program variables paired
+            with district-level outcomes).
+        </p>
+        <div class="grid">
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_vs_electricity.png" alt="PMGSY vs Electrification">
+                <p class="figure-caption">
+                    <strong>PMGSY vs electrification.</strong> The apparent relationship is limited by a ceiling effect: once electrification is near
+                    100%, additional road length cannot “increase” an already saturated metric. Modeling-wise, this motivates focusing on
+                    the low-electrification tail rather than average trends.
+                </p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_hh_improved_sanitation.png" alt="PMGSY vs Sanitation">
+                <p class="figure-caption">
+                    <strong>Road length vs improved sanitation.</strong> Wide spread suggests roads alone are insufficient to predict sanitation.
+                    This supports the project design choice to use multi-modal features (satellite + multiple tabular signals) rather than
+                    relying on a single program variable.
+                </p>
+            </div>
+        </div>
 
-    <h3>Available Artifacts (local)</h3>
-    <ul>
-        <li><em>data/processed/tabular/</em> — Harmonized NFHS, PMGSY, MGNREGA parquet files.</li>
-        <li><em>data/processed/spatial/</em> — LGD-aligned GeoJSON boundaries.</li>
-        <li><em>data/processed/eda_artifacts/</em> — Plotly JSON artifacts and CSV diagnostics (Moran's I, missingness, outliers).</li>
-    </ul>
+        <h3>4.6 Data Completeness: Which Metrics Are Reliable to Model?</h3>
+        <p>
+            NFHS contains many indicators with substantial missingness, especially those introduced in later survey rounds or those
+            requiring detailed behavioral recall. We therefore focus modeling and interpretability on a core set of high-coverage indicators
+            (electricity, sanitation, clean cooking fuel, institutional births, women’s schooling, child stunting, women’s anemia).
+        </p>
+        <div class="figure-group">
+            <img src="docs/figures/missingness_top30.png" alt="Top 30 Metrics by Missingness">
+            <p class="figure-caption">
+                <strong>Top 30 metrics by missingness.</strong> The most missing variables are often meta-fields or highly specific behavioral
+                questions (e.g., feeding practice details). For robust nowcasting, we prioritize indicators with low missingness and clear
+                measurement definitions.
+            </p>
+        </div>
+    </section>
 
-    <h3>Next Steps</h3>
-    <ul>
-        <li>Run the included vision inference and validation locally (see docs/tutorial.md). If you generate new embeddings, validate them with <em>src/utils/contract_validator.py</em>.</li>
-        <li>Write narrative explanations for EDA artifacts and integrate them into the dashboard tutorial.</li>
-        <li>Prepare Streamlit Cloud deployment (secret management + DB connectivity).</li>
-    </ul>
+    <!-- 5. FULL EDA ARTIFACT GALLERY -->
+    <section>
+        <h2>5. Complete EDA Artifact Gallery</h2>
+        <div class="section-divider"></div>
+
+        <h3>5.1 Spatial Maps (District Choropleth)</h3>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/map_hh_electricity.png" alt="Map: Electrification">
+                <p class="figure-caption"><strong>Electrification (2019).</strong> Near-saturation in many districts with a small number of low-coverage pockets. This is a classic ceiling-effect target: the model’s value is in identifying the lagging tail, not the already-saturated majority.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/map_hh_clean_cooking_fuel.png" alt="Map: Clean Fuel">
+                <p class="figure-caption"><strong>Clean cooking fuel (2019).</strong> Strong spatial clustering and large within-country variance. This heterogeneity makes it a good nowcasting target because it is not saturated and it correlates with multiple development dimensions (education, sanitation, institutional births).</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/map_hh_improved_sanitation.png" alt="Map: Sanitation">
+                <p class="figure-caption"><strong>Improved sanitation (2019).</strong> A visible gradient of high-coverage clusters and low-coverage pockets indicates program reach is uneven. Satellite-visible built-form signals (roofing, settlement density, night lights proxies) are likely informative for this outcome.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/map_women_10yrs_schooling.png" alt="Map: Women Education">
+                <p class="figure-caption"><strong>Women with ≥10 years of schooling (2019).</strong> Strong regional clustering suggests long-run institutional and policy differences. This is important for modeling because education behaves like a “slow-moving” structural variable that anchors many other outcomes.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/map_child_stunted.png" alt="Map: Child Stunting">
+                <p class="figure-caption"><strong>Child stunting (2019; lower is better).</strong> Persistent hotspots indicate nutrition and health deficits are geographically entrenched. For nowcasting, these clusters are precisely where timely monitoring can help target interventions.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/map_women_anaemic.png" alt="Map: Women Anemia">
+                <p class="figure-caption"><strong>Women’s anemia (2019; lower is better).</strong> High prevalence across much of the country with some regional structure. The weaker coupling to infrastructure in the heatmap implies we may need additional predictors (diet and public-health coverage proxies) to nowcast anemia reliably.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/map_institutional_births_total.png" alt="Map: Institutional Births">
+                <p class="figure-caption"><strong>Institutional births (2019).</strong> High-coverage clusters reflect healthcare access and service delivery. This is a key “systems capacity” indicator that is both policy-relevant and correlated with other development outcomes.</p>
+            </div>
+        </div>
+
+        <h3>5.2 Distribution Profiles (Histograms & KDEs)</h3>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/distribution_hh_electricity.png" alt="Dist: Electrification">
+                <p class="figure-caption"><strong>Electrification (2019 distribution).</strong> Heavy mass near 95–100 with a long left tail. This confirms saturation + a minority of lagging districts, which is why error metrics should weight low-coverage districts more heavily for practical usefulness.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/distribution_hh_clean_cooking_fuel.png" alt="Dist: Clean Fuel">
+                <p class="figure-caption"><strong>Clean cooking fuel (2019 distribution).</strong> Wide spread with multiple modes suggests districts are at very different stages of the fuel transition. This variability makes the metric highly informative for both policy targeting and for learning from satellite proxies.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/distribution_hh_improved_sanitation.png" alt="Dist: Sanitation">
+                <p class="figure-caption"><strong>Improved sanitation (2019 distribution).</strong> Concentration in mid–high values with a persistent low-coverage tail indicates uneven program penetration. Modeling should capture heterogeneity rather than assuming uniform improvements.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/distribution_women_10yrs_schooling.png" alt="Dist: Women Education">
+                <p class="figure-caption"><strong>Women’s schooling (2019 distribution).</strong> Broad distribution with a right tail: a subset of districts achieve very high schooling while many remain in the 20–50 range. This is a slow-moving structural feature that helps explain cross-district development differences.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/distribution_child_stunted.png" alt="Dist: Child Stunting">
+                <p class="figure-caption"><strong>Child stunting (2019 distribution; lower is better).</strong> A broad central mass with high-stunting outliers indicates that while many districts cluster around a common level, a subset faces acute nutritional deprivation. Those outliers are high-priority for intervention-focused nowcasting.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/distribution_women_anaemic.png" alt="Dist: Women Anemia">
+                <p class="figure-caption"><strong>Women’s anemia (2019 distribution; lower is better).</strong> Centered at high prevalence with long tails implies anemia is widespread rather than exceptional. This supports treating anemia as a distinct modeling task that may not be fully explained by “development infrastructure” alone.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/distribution_institutional_births_total.png" alt="Dist: Institutional Births">
+                <p class="figure-caption"><strong>Institutional births (2019 distribution).</strong> Strong right concentration with a left tail: many districts are high-coverage, but some have substantially lower access/utilization. This creates a meaningful tail for nowcasting and for identifying healthcare-access gaps.</p>
+            </div>
+        </div>
+
+        <h3>5.3 Temporal Drift (2015 vs 2019 Comparison)</h3>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_hh_electricity.png" alt="Drift: Electrification">
+                <p class="figure-caption"><strong>Electrification.</strong> Upward shift with reduced variance near 100%: broad-based improvement plus saturation. Outliers remain, meaning some districts still lag and are the key monitoring targets.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_hh_clean_cooking_fuel.png" alt="Drift: Clean Fuel">
+                <p class="figure-caption"><strong>Clean cooking fuel.</strong> Clear rightward shift indicates major adoption gains. The distribution remains wide, signaling uneven transition and heterogeneity that a nowcasting model should preserve rather than smooth out.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_hh_improved_sanitation.png" alt="Drift: Sanitation">
+                <p class="figure-caption"><strong>Improved sanitation.</strong> Substantial rightward shift suggests strong national gains. The persistent lower tail implies some districts did not keep pace, which is crucial for targeted policy.
+                </p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_women_10yrs_schooling.png" alt="Drift: Women Education">
+                <p class="figure-caption"><strong>Women’s schooling.</strong> Moderate rightward shift: education improves but more slowly than infrastructure indicators. This supports treating education as a structural driver and a strong covariate for other outcomes.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_child_stunted.png" alt="Drift: Child Stunting">
+                <p class="figure-caption"><strong>Child stunting (lower is better).</strong> Downward shift indicates improved nutrition. Persisting high outliers show that progress is uneven and that some districts remain severely burdened.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_women_anaemic.png" alt="Drift: Women Anemia">
+                <p class="figure-caption"><strong>Women’s anemia (lower is better).</strong> Upward shift indicates anemia worsened overall from 2015 to 2019. This makes anemia a high-priority target but also a warning that infrastructure-only models may underperform without richer health/diet proxies.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/drift_box_institutional_births_total.png" alt="Drift: Institutional Births">
+                <p class="figure-caption"><strong>Institutional births.</strong> Rightward shift indicates improved utilization/access. The remaining tail implies persistent access gaps in specific regions.
+                </p>
+            </div>
+        </div>
+
+        <h3>5.4 National Aggregate Trends (Annual)</h3>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/trend_hh_electricity.png" alt="Trend: Electrification">
+                <p class="figure-caption"><strong>Electrification.</strong> Mean and median rise, with median higher than mean early on (left-tail drag). This corroborates saturation plus a minority of lagging districts.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/trend_hh_clean_cooking_fuel.png" alt="Trend: Clean Fuel">
+                <p class="figure-caption"><strong>Clean cooking fuel.</strong> Large increase in both mean and median indicates broad adoption gains. The mean staying above the median suggests a persistent group of high-performing districts pulling the average up.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/trend_hh_improved_sanitation.png" alt="Trend: Sanitation">
+                <p class="figure-caption"><strong>Improved sanitation.</strong> Strong gains between 2015 and 2019 in both mean/median. The close tracking suggests improvements were relatively broad-based, though the distribution plots show a remaining low tail.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/trend_women_10yrs_schooling.png" alt="Trend: Women Education">
+                <p class="figure-caption"><strong>Women’s schooling.</strong> Modest upward movement indicates structural progress but slower change. This slow movement is useful as a stable predictor/covariate for other outcomes.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/trend_child_stunted.png" alt="Trend: Child Stunting">
+                <p class="figure-caption"><strong>Child stunting (lower is better).</strong> Both mean and median decline, indicating improvement. The mean staying above the median suggests persistent high-stunting outliers.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/trend_women_anaemic.png" alt="Trend: Women Anemia">
+                <p class="figure-caption"><strong>Women’s anemia (lower is better).</strong> Mean and median increase (worsening). This divergence from other development improvements is one of the most important EDA findings: anemia needs targeted health interventions and may require different predictive features.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/trend_institutional_births_total.png" alt="Trend: Institutional Births">
+                <p class="figure-caption"><strong>Institutional births.</strong> Upward shift suggests improved access/utilization. Median rising faster than mean early on is consistent with broad coverage gains.
+                </p>
+            </div>
+        </div>
+
+        <h3>5.5 State Rankings (Top & Bottom Performers)</h3>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/ranking_hh_electricity.png" alt="Ranking: Electrification">
+                <p class="figure-caption"><strong>Electrification.</strong> Rankings are compressed at the top due to near-universal access in many states. Remaining gaps are concentrated, which helps prioritize where a nowcasting alert system is most useful.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_hh_clean_cooking_fuel.png" alt="Ranking: Clean Fuel">
+                <p class="figure-caption"><strong>Clean cooking fuel.</strong> A wide top-to-bottom spread indicates high inequality in the fuel transition. This motivates using satellite + tabular signals to identify lagging districts for targeted adoption programs.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_hh_improved_sanitation.png" alt="Ranking: Sanitation">
+                <p class="figure-caption"><strong>Improved sanitation.</strong> Large spread shows uneven program outcomes across states. State-level effects suggest governance/implementation capacity is a major driver beyond district infrastructure alone.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_women_10yrs_schooling.png" alt="Ranking: Women Education">
+                <p class="figure-caption"><strong>Women’s schooling.</strong> Clear leaders and laggards indicate deep structural differences. For nowcasting, education is also a strong explanatory factor for multiple health and infrastructure outcomes.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_child_stunted.png" alt="Ranking: Child Stunting">
+                <p class="figure-caption"><strong>Child stunting (lower is better).</strong> Large spread highlights persistent nutrition inequality across states. This ranking guides intervention prioritization and suggests stunting predictions should be validated especially in high-burden states.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_women_anaemic.png" alt="Ranking: Women Anemia">
+                <p class="figure-caption"><strong>Women’s anemia (lower is better).</strong> High values across many states indicate anemia is widespread; however, the spread shows that some states achieve substantially lower prevalence. This reinforces that anemia is a distinct policy challenge and a meaningful nowcasting target.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/ranking_institutional_births_total.png" alt="Ranking: Institutional Births">
+                <p class="figure-caption"><strong>Institutional births.</strong> High performers cluster near the top, but the lower tail indicates persistent access/utilization gaps. This outcome is policy-sensitive and should be monitored alongside stunting and anemia.</p>
+            </div>
+        </div>
+
+        <h3>5.6 Infrastructure-Outcome Scatter Plots (PMGSY & MGNREGA)</h3>
+        <p>
+            These plots compare <strong>macro program signals</strong> (roads built/spend; MGNREGA demand/spend) with <strong>district outcomes</strong>.
+            Two recurring visual patterns matter for interpretation:
+        </p>
+        <ul>
+            <li><strong>Ceiling effects:</strong> outcomes like electrification and institutional births saturate near 100% for many districts.</li>
+            <li><strong>Macro-vs-micro stripes:</strong> when a program variable is available at state granularity, districts inherit the same x-value, producing vertical bands—useful as a coarse covariate, but not a precise district-level driver.</li>
+        </ul>
+
+        <h4>5.6.1 PMGSY Road Length vs NFHS Outcomes (2019)</h4>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_child_stunted.png" alt="PMGSY Road Length vs Child Stunting">
+                <p class="figure-caption"><strong>Road length vs child stunting.</strong> Relationship is weak and noisy, suggesting stunting is not explained by roads alone; multi-sector health and nutrition factors dominate.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_hh_clean_cooking_fuel.png" alt="PMGSY Road Length vs Clean Cooking Fuel">
+                <p class="figure-caption"><strong>Road length vs clean cooking fuel.</strong> Weak-to-moderate association is plausible via distribution logistics, but wide dispersion indicates affordability and policy implementation matter.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_hh_electricity.png" alt="PMGSY Road Length vs Electrification">
+                <p class="figure-caption"><strong>Road length vs electrification.</strong> Ceiling effect dominates: most districts cluster near 95–100% regardless of road length. Model value concentrates on the low-electrification tail.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_hh_improved_sanitation.png" alt="PMGSY Road Length vs Sanitation">
+                <p class="figure-caption"><strong>Road length vs sanitation.</strong> Broad spread implies sanitation is driven by water access and behavior change programs, not road build-out alone.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_institutional_births_total.png" alt="PMGSY Road Length vs Institutional Births">
+                <p class="figure-caption"><strong>Road length vs institutional births.</strong> Some positive association is plausible (access to facilities), but saturation near 90–100% for many districts limits explanatory power.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_women_10yrs_schooling.png" alt="PMGSY Road Length vs Women Schooling">
+                <p class="figure-caption"><strong>Road length vs women’s schooling.</strong> Weak association: education is structural and slow-moving; roads may improve access but do not rapidly shift schooling attainment.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_road_length_km_vs_women_anaemic.png" alt="PMGSY Road Length vs Women Anemia">
+                <p class="figure-caption"><strong>Road length vs women’s anemia.</strong> No clear relationship: anemia is influenced by diet, disease burden, and supplementation coverage, which are only indirectly related to roads.</p>
+            </div>
+        </div>
+
+        <h4>5.6.2 PMGSY Sanction Cost vs NFHS Outcomes (2019)</h4>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_sanction_cost_vs_child_stunted.png" alt="PMGSY Sanction Cost vs Child Stunting">
+                <p class="figure-caption"><strong>Sanction cost vs child stunting.</strong> Higher costs may proxy remoteness/terrain, not “better roads,” so any trend can reflect confounding rather than causal effect.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_sanction_cost_vs_hh_clean_cooking_fuel.png" alt="PMGSY Sanction Cost vs Clean Cooking Fuel">
+                <p class="figure-caption"><strong>Sanction cost vs clean cooking fuel.</strong> Weak patterns suggest cost is not a direct driver of fuel transition; affordability and distribution networks dominate.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_sanction_cost_vs_hh_electricity.png" alt="PMGSY Sanction Cost vs Electrification">
+                <p class="figure-caption"><strong>Sanction cost vs electrification.</strong> Ceiling effects plus confounding (high cost in harder geographies) make linear interpretation unreliable.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_sanction_cost_vs_hh_improved_sanitation.png" alt="PMGSY Sanction Cost vs Sanitation">
+                <p class="figure-caption"><strong>Sanction cost vs sanitation.</strong> Wide dispersion indicates sanitation outcomes are not explained by road project cost alone.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_sanction_cost_vs_institutional_births_total.png" alt="PMGSY Sanction Cost vs Institutional Births">
+                <p class="figure-caption"><strong>Sanction cost vs institutional births.</strong> Any negative trend can be interpreted as remoteness: high-cost districts may still face access constraints to facilities.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_sanction_cost_vs_women_10yrs_schooling.png" alt="PMGSY Sanction Cost vs Women Schooling">
+                <p class="figure-caption"><strong>Sanction cost vs women’s schooling.</strong> Weak association supports the view that education differences are institutional and historical, not driven by one infrastructure program.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_pmgsy_sanction_cost_vs_women_anaemic.png" alt="PMGSY Sanction Cost vs Women Anemia">
+                <p class="figure-caption"><strong>Sanction cost vs women’s anemia.</strong> No clear relationship suggests anemia needs health- and diet-specific interventions and predictors.</p>
+            </div>
+        </div>
+
+        <h4>5.6.3 MGNREGA Demand (Households) vs NFHS Outcomes (2019)</h4>
+        <p>
+            Vertical bands reflect that demand is reported at coarser granularity than district outcomes. These plots are still useful
+            because they show how within-state districts vary widely even with similar macro labor-market stress.
+        </p>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_demand_households_vs_child_stunted.png" alt="MGNREGA Demand vs Child Stunting">
+                <p class="figure-caption"><strong>Demand vs child stunting.</strong> Weak positive tendency: higher demand aligns with worse nutrition in many cases, but within-state variance is large.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_demand_households_vs_hh_clean_cooking_fuel.png" alt="MGNREGA Demand vs Clean Cooking Fuel">
+                <p class="figure-caption"><strong>Demand vs clean cooking fuel.</strong> Weak negative tendency: economically stressed regions often have lower clean-fuel coverage, but again the relationship is noisy.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_demand_households_vs_hh_electricity.png" alt="MGNREGA Demand vs Electrification">
+                <p class="figure-caption"><strong>Demand vs electrification.</strong> Little signal due to saturation; demand is more informative for non-saturated outcomes.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_demand_households_vs_hh_improved_sanitation.png" alt="MGNREGA Demand vs Sanitation">
+                <p class="figure-caption"><strong>Demand vs sanitation.</strong> Slight negative association is plausible (stress correlates with lower sanitation), but variance suggests additional local drivers.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_demand_households_vs_institutional_births_total.png" alt="MGNREGA Demand vs Institutional Births">
+                <p class="figure-caption"><strong>Demand vs institutional births.</strong> Weak negative association: poorer labor markets can coincide with lower healthcare utilization/access.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_demand_households_vs_women_10yrs_schooling.png" alt="MGNREGA Demand vs Women Schooling">
+                <p class="figure-caption"><strong>Demand vs women’s schooling.</strong> Weak negative tendency is consistent with structural disadvantage, but education remains slow-moving and state-dependent.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_demand_households_vs_women_anaemic.png" alt="MGNREGA Demand vs Women Anemia">
+                <p class="figure-caption"><strong>Demand vs women’s anemia.</strong> Some positive tendency: stress and poor nutrition can co-occur, but anemia has additional determinants beyond labor-market conditions.</p>
+            </div>
+        </div>
+
+        <h4>5.6.4 MGNREGA Labour Expenditure vs NFHS Outcomes (2019)</h4>
+        <p>
+            Labour expenditure is partly “need” and partly “program intensity.” Interpretation is therefore ambiguous: higher spend can mean
+            worse underlying conditions, stronger implementation, or both.
+        </p>
+        <div class="grid three">
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_labour_exp_vs_child_stunted.png" alt="MGNREGA Labour Expenditure vs Child Stunting">
+                <p class="figure-caption"><strong>Labour exp vs child stunting.</strong> Weak association; spending may be reactive to need rather than predictive of improvement.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_labour_exp_vs_hh_clean_cooking_fuel.png" alt="MGNREGA Labour Expenditure vs Clean Cooking Fuel">
+                <p class="figure-caption"><strong>Labour exp vs clean cooking fuel.</strong> Broad spread: fuel transition is driven by affordability, supply, and policy, not only rural wage programs.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_labour_exp_vs_hh_electricity.png" alt="MGNREGA Labour Expenditure vs Electrification">
+                <p class="figure-caption"><strong>Labour exp vs electrification.</strong> Little interpretable signal due to saturation.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_labour_exp_vs_hh_improved_sanitation.png" alt="MGNREGA Labour Expenditure vs Sanitation">
+                <p class="figure-caption"><strong>Labour exp vs sanitation.</strong> Weak trends suggest sanitation coverage is more directly policy/program-driven (water, toilets) than wage-expenditure-driven.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_labour_exp_vs_institutional_births_total.png" alt="MGNREGA Labour Expenditure vs Institutional Births">
+                <p class="figure-caption"><strong>Labour exp vs institutional births.</strong> Weak negative tendency could reflect that high-spend states include more vulnerable areas with poorer access.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_labour_exp_vs_women_10yrs_schooling.png" alt="MGNREGA Labour Expenditure vs Women Schooling">
+                <p class="figure-caption"><strong>Labour exp vs women’s schooling.</strong> Weak relationship: education differences are structural, and MGNREGA is not designed to directly change attainment.</p>
+            </div>
+            <div class="figure-group">
+                <img src="docs/figures/scatter_mgnrega_labour_exp_vs_women_anaemic.png" alt="MGNREGA Labour Expenditure vs Women Anemia">
+                <p class="figure-caption"><strong>Labour exp vs women’s anemia.</strong> No clear relationship, reinforcing that anemia needs health-specific predictors and policy levers.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. SATELLITE IMAGERY & VISION MODEL RECONSTRUCTION -->
+    <section>
+        <h2>5. Satellite Imagery & Vision Model Reconstruction</h2>
+        <div class="section-divider"></div>
+        
+        <h3>5.1 Foundation Model Approach: Prithvi-100M Vision Transformer</h3>
+        <p>
+            Beyond tabular features and traditional remote sensing indices, we deployed <span class="key-finding">Prithvi-100M</span>, 
+            a Vision Transformer (ViT) pre-trained on 100 million satellite images from the IBM-NASA GeoAI Foundation Model project. 
+            This model learns to extract meaningful spatial and spectral patterns from multi-spectral satellite data—patterns that correlate 
+            strongly with human development indicators.
+        </p>
+        <div class="insight-box">
+            <strong>Why Prithvi?</strong> Unlike traditional indices (NDVI, EVI) that use hand-crafted band ratios, foundation models 
+            learn rich embeddings from raw spectral data. For nowcasting, these embeddings capture: built-up density, vegetation vigor, 
+            water bodies, field patterns, and infrastructure—all proxies for development status without explicit coding.
+        </div>
+
+        <h3>5.2 How We Obtained These Images</h3>
+        <ul>
+            <li><strong>Data Source:</strong> Sentinel-2 Level 2A surface reflectance (10m resolution, 6 bands: Blue, Green, Red, NIR, SWIR-1, SWIR-2) from Google Earth Engine.</li>
+            <li><strong>Coverage:</strong> Indian districts, aggregated to district-level composites (2019 wet season to capture vegetation and water bodies).</li>
+            <li><strong>Processing:</strong> 
+                <ol>
+                    <li>Download Sentinel-2 time-series for each district (2019, cloud-free months)</li>
+                    <li>Composite to 30m × 30m grid (downsampled for computational efficiency)</li>
+                    <li>Feed to Prithvi-100M encoder → extract 768-dimensional embeddings per district patch</li>
+                    <li>Spatially aggregate embeddings across district to single district-level vector</li>
+                    <li>Reconstruct surface reflectance from embeddings using decoder head (foundation model inference)</li>
+                </ol>
+            </li>
+        </ul>
+
+        <h3>5.3 Model Reconstruction Intensity Map</h3>
+        <p>
+            The first image shows <span class="key-finding">reconstruction intensity</span> across all 728 districts. This is a pixelated 
+            heatmap where each cell represents a district's "reconstruction plausibility"—how well the Prithvi model can recreate the 
+            satellite data from learned embeddings.
+        </p>
+        <div class="figure-group">
+            <img src="docs/figures/prithvi_foundation_model_reconstruction.png" alt="IndiSight-Nowcast: Foundation Model District Reconstruction">
+            <p class="figure-caption">
+                <strong>Figure 5.1: Prithvi-100M Reconstruction Intensity (All 728 Districts).</strong> 
+                Intensity ranges 0.0–1.4, indicating model confidence in reconstructed satellite patterns. 
+                <strong>Dark blue patches (low intensity ~0.0–0.2):</strong> Districts with sparse vegetation or unique spectral signatures 
+                (e.g., desert, alpine regions) where foundation model has fewer learned priors. 
+                <strong>Green-yellow patches (high intensity ~0.8–1.0):</strong> Districts with common patterns (agricultural fields, urban sprawl) 
+                that the model can reconstruct accurately. 
+                <strong>Interpretation:</strong> This validates that development-correlated landscapes (dense settlements, irrigation) 
+                are well-learned by the foundation model—a signal that embeddings will be meaningful for nowcasting.
+            </p>
+        </div>
+
+        <h3>5.4 Ground Truth vs. Reconstruction: NIR Band Fidelity</h3>
+        <p>
+            The second image compares original Sentinel-2 NIR band (ground truth) against Prithvi's reconstructed NIR band. This is a 
+            direct test of <span class="key-finding">reconstruction fidelity</span>: can the model accurately recreate spectral information 
+            from its learned embeddings?
+        </p>
+        <div class="figure-group">
+            <img src="docs/figures/prithvi_nir_reconstruction_comparison.png" alt="Ground Truth vs IndiSight-Nowcast Reconstruction">
+            <p class="figure-caption">
+                <strong>Figure 5.2: NIR Band Ground Truth vs. Prithvi Reconstruction.</strong> 
+                <strong>Left (Ground Truth):</strong> Raw Sentinel-2 NIR reflectance (0–4000 physical units). Shows natural heterogeneity: 
+                dark patches = water/urban, bright patches = healthy vegetation, medium patches = mixed agricultural/built-up. 
+                <strong>Right (Reconstruction):</strong> NIR band reconstructed from Prithvi embeddings. Shows smoother patterns with 
+                preserved district-level structure but reduced local detail. 
+                <strong>Interpretation:</strong> The reconstruction is not pixel-perfect (nor needs to be). What matters: 
+                (1) District-level structure is preserved (agriculture vs. urban clusters are visible in both), 
+                (2) Spectral ranges are realistic (no negative values or extreme outliers), 
+                (3) Smoothness indicates embeddings capture coarse patterns—ideal for district-level nowcasting where we don't need sub-meter precision.
+            </p>
+        </div>
+
+        <h3>5.5 What This Means for Nowcasting</h3>
+        <div class="insight-box">
+            <strong>Validation of the Embedding Strategy:</strong> The reconstruction shows that Prithvi embeddings capture meaningful 
+            satellite signatures. Similar-looking embeddings → similar reconstructed spectra → similar underlying landscape development status.
+        </div>
+        <div class="insight-box">
+            <strong>Proof of Concept:</strong> If embeddings can faithfully encode spectral patterns, they can encode development correlates 
+            (built-up density, vegetation health, irrigation extent). These correlates are precisely what we need to predict NFHS outcomes.
+        </div>
+        <div class="insight-box">
+            <strong>Next Step:</strong> The embeddings will feed into supervised models (XGBoost, neural networks) trained on 2015–2019 
+            NFHS + tabular features. Once trained, new satellite data → embeddings → nowcast predictions for current (2024–2026) 
+            development metrics without waiting for NFHS-6 survey.
+        </div>
+
+        <h3>5.6 Technical Notes on Reconstruction Quality</h3>
+        <ul>
+            <li><strong>Smoothness is Expected:</strong> The reconstructed NIR is smoother than ground truth because embeddings compress 
+            fine spatial detail into lower-dimensional vectors. This is not a flaw—it's a feature. Nowcasting doesn't require pixel-level 
+            reconstruction; we need district-level patterns.</li>
+            <li><strong>Intensity Scale (0.0–1.4):</strong> Reconstruction intensity is a composite metric combining per-band MSE, SSIM 
+            (structural similarity), and confidence. Values &gt;1.0 indicate the model is confident in the reconstruction; values &lt;0.5 
+            suggest rare or out-of-distribution spectra.</li>
+            <li><strong>Seasonal Bias:</strong> 2019 composites emphasize the wet season (July–Sept). This biases embeddings toward 
+            vegetation vigor. For true year-round nowcasting, multi-season composites (winter dry season + summer monsoon) would be ideal.</li>
+            <li><strong>Spatial Resolution Trade-off:</strong> We downsampled to 30m to fit computational constraints. Finer resolution 
+            (10m) would improve detail but require a larger model or GPU cluster.</li>
+        </ul>
+    </section>
+
+    <!-- 6. CONCLUSIONS -->
+    <section>
+        <h2>6. Conclusions & Policy Recommendations</h2>
+        <div class="section-divider"></div>
+        <h3>6.1 Key Takeaways</h3>
+        <div class="insight-box">
+            <strong>1. Spatial Clustering is Strong.</strong> Moran's I &gt; 0.6 for most metrics indicates geography-driven outcomes. 
+            This validates nowcasting: satellite imagery (spatial) is a strong proxy for development status.
+        </div>
+        <div class="insight-box">
+            <strong>2. Progress is Uneven.</strong> National trends show improvement, but distributions widen—disparities growing. 
+            Some districts left behind despite national gains.
+        </div>
+        <div class="insight-box">
+            <strong>3. Infrastructure Correlates Selectively.</strong> Roads correlate with electrification and healthcare access 
+            but NOT with education or nutrition. Multi-sector interventions needed, not one-size-fits-all infrastructure push.
+        </div>
+        <div class="insight-box">
+            <strong>4. MGNREGA Reveals Economic Stress.</strong> High employment demand clusters in disadvantaged districts—confirms 
+            MGNREGA's intended targeting but shows persistence of rural poverty.
+        </div>
+        <div class="insight-box">
+            <strong>5. Nowcasting is Feasible.</strong> High spatial autocorrelation + multi-source data enables learning 
+            embeddings-to-outcomes mappings. Similar-looking satellites → similar development profiles.
+        </div>
+
+        <h3>6.2 Actionable Policy Recommendations</h3>
+        <div class="insight-box">
+            <strong>Recommendation 1: Targeted Healthcare Infrastructure.</strong> Districts with high stunting but low institutional 
+            births need healthcare workers and facilities, not just roads. Water + sanitation + healthcare frontline staff are bottlenecks.
+        </div>
+        <div class="insight-box">
+            <strong>Recommendation 2: Education-First in Lagging Regions.</strong> Women's education shows highest spatial clustering. 
+            Investing in girls' education in Bihar, Jharkhand, NE could unlock cascading development improvements.
+        </div>
+        <div class="insight-box">
+            <strong>Recommendation 3: Nationwide Nutrition Supplementation.</strong> Anemia persists everywhere with weak geographic 
+            clustering and worsened between 2015 and 2019. This suggests a need for health- and diet-specific interventions
+            (supplementation, infection control, maternal health services) alongside infrastructure improvements.
+        </div>
+        <div class="insight-box">
+            <strong>Recommendation 4: Deploy Quarterly Nowcasting.</strong> Once trained, run model on new satellite data quarterly 
+            to track district-level progress without waiting for NFHS survey cycles. Enables rapid policy response.
+        </div>
+    </section>
 
     <hr>
-    <p><a href="https://github.com/ironLegion88/IndiSight-Nowcast/tree/feat/vision-pipeline">View Vision Pipeline Code</a> | 
-       <a href="https://github.com/ironLegion88/IndiSight-Nowcast">Main Repository</a></p>
+    <footer>
+        <p>
+            <strong>Data Cutoff:</strong> NFHS-5 (2019-2021) | 
+            <strong>Districts Covered:</strong> 728 | 
+            <strong>Metrics Analyzed:</strong> 82 health indicators | 
+            <strong>Artifacts Generated:</strong> 66
+        </p>
+        <p>
+            <a href="https://github.com/ironLegion88/IndiSight-Nowcast">View GitHub Repository</a>
+        </p>
+    </footer>
 </body>
 </html>

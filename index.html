@@ -47,7 +47,84 @@
     </div>
 
     <h2>4. Analytical Results</h2>
-    <p><em>(Sarthak: Content from your branch on district trends and socio-economic analysis will be integrated here.)</em></p>
+    <p>This report documents the current implementation state (April 2026), the available data artifacts, and high-level analytical insights produced by the project.</p>
+
+    <h3>Key Implementation Summary</h3>
+    <ul>
+        <li><strong>Data Engineering:</strong> Harmonized NFHS/PMGSY/MGNREGA ingestion producing parquet outputs; PostGIS seeding utilities implemented.</li>
+        <li><strong>EDA Artifacts:</strong> 50+ interactive Plotly artifacts and multiple diagnostics CSVs generated in <em>data/processed/eda_artifacts/</em>.</li>
+        <li><strong>Vision Proof-of-Concept:</strong> <code>Prithvi.py</code> and inference scripts are present. The pretrained weights <code>Prithvi_100M.pt</code> are included at the repository root, enabling local inference and validation.</li>
+        <li><strong>Dashboard:</strong> Streamlit app at <em>app/main.py</em> with map, agent scaffold, and EDA viewer.</li>
+    </ul>
+
+    <h3>Selected EDA Insights</h3>
+    <ul>
+        <li>Spatial clustering is present across many health and infrastructure metrics (Moran's I diagnostics available).</li>
+        <li>Southern states show consistently higher electrification and sanitation metrics; pockets of low values are visible in several northern states.</li>
+        <li>Missingness and outlier diagnostics are pre-computed; refer to <em>data/processed/eda_artifacts/</em> for details.</li>
+    </ul>
+
+    <h3>EDA Artifact Interpretations</h3>
+    <div class="grid">
+        <div>
+            <img src="docs/figures/correlation_heatmap.png" alt="Correlation Heatmap">
+            <p><small><strong>Correlation heatmap:</strong> Pairwise metric correlations highlighting co-varying indicators and potential redundancies among the NFHS metrics.</small></p>
+        </div>
+        <div>
+            <img src="docs/figures/map_hh_electricity.png" alt="Electrification Map">
+            <p><small><strong>Electrification map:</strong> District-level choropleth for electrification; clear Southern clusters and northern pockets of low coverage.</small></p>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div>
+            <img src="docs/figures/distribution_hh_electricity.png" alt="Electrification Distribution">
+            <p><small><strong>Distribution:</strong> Histogram and KDE for district electrification values, showing skew and tail behaviour.</small></p>
+        </div>
+        <div>
+            <img src="docs/figures/drift_box_hh_electricity.png" alt="Electrification Drift">
+            <p><small><strong>Drift (2015 vs 2019):</strong> Box comparison indicating which districts improved vs those that stagnated.</small></p>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div>
+            <img src="docs/figures/trend_hh_electricity.png" alt="National Trend">
+            <p><small><strong>National trend:</strong> Time-series aggregate visualizing national progress in electrification.</small></p>
+        </div>
+        <div>
+            <img src="docs/figures/ranking_hh_electricity.png" alt="State Ranking">
+            <p><small><strong>State ranking:</strong> Top and bottom performing states for electrification in 2019.</small></p>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div>
+            <img src="docs/figures/scatter_pmgsy_vs_electricity.png" alt="Road vs Electrification">
+            <p><small><strong>Infrastructure vs Outcome:</strong> PMGSY road length vs district electrification — helps interpret infrastructure-investment relationships.</small></p>
+        </div>
+    </div>
+
+    <h3>How to reproduce the analysis locally</h3>
+    <ol>
+        <li>Start PostGIS and Qdrant with <code>docker-compose up -d</code>.</li>
+        <li>Run the tabular ingestion and seeding scripts: <code>pixi run python -m src.data_engine.ingest_tabular</code> and <code>pixi run python -m src.data_engine.seed_postgis</code>.</li>
+        <li>Open the dashboard: <code>pixi run streamlit run app/main.py</code> and explore the three main tabs (3D Map, AI Policy Assistant, Metrics & EDA).</li>
+    </ol>
+
+    <h3>Available Artifacts (local)</h3>
+    <ul>
+        <li><em>data/processed/tabular/</em> — Harmonized NFHS, PMGSY, MGNREGA parquet files.</li>
+        <li><em>data/processed/spatial/</em> — LGD-aligned GeoJSON boundaries.</li>
+        <li><em>data/processed/eda_artifacts/</em> — Plotly JSON artifacts and CSV diagnostics (Moran's I, missingness, outliers).</li>
+    </ul>
+
+    <h3>Next Steps</h3>
+    <ul>
+        <li>Run the included vision inference and validation locally (see docs/tutorial.md). If you generate new embeddings, validate them with <em>src/utils/contract_validator.py</em>.</li>
+        <li>Write narrative explanations for EDA artifacts and integrate them into the dashboard tutorial.</li>
+        <li>Prepare Streamlit Cloud deployment (secret management + DB connectivity).</li>
+    </ul>
 
     <hr>
     <p><a href="https://github.com/ironLegion88/IndiSight-Nowcast/tree/feat/vision-pipeline">View Vision Pipeline Code</a> | 

@@ -188,7 +188,8 @@ else:
 st.title("IndiSight: Multi-Modal Economic Nowcasting")
 st.markdown("Fusing Satellite Imagery, PMGSY Infrastructure, and NDAP Tabular Data to estimate district-level development in real-time.")
 
-tab_map, tab_chat, tab_eda = st.tabs(["3D Spatial View", "AI Policy Assistant", "Metrics & EDA"])
+# Add a tutorial/blog tab to the main dashboard
+tab_map, tab_chat, tab_eda, tab_tutorial = st.tabs(["3D Spatial View", "AI Policy Assistant", "Metrics & EDA", "Tutorial"])
 
 # -----------------------------------------
 # TAB 1: 3D Spatial Map (PyDeck)
@@ -546,3 +547,19 @@ with tab_eda:
     if artifacts["metric_quality_csv"].exists():
         with st.expander("View Metric Quality by Year"):
             st.dataframe(pd.read_csv(artifacts["metric_quality_csv"]), use_container_width=True)
+
+
+# -----------------------------------------
+# TAB 4: TUTORIAL / BLOG
+# -----------------------------------------
+with tab_tutorial:
+    st.subheader("Tutorial & Project Blog")
+    tutorial_path = PROJECT_ROOT / "docs" / "tutorial.md"
+    if tutorial_path.exists():
+        try:
+            md_text = tutorial_path.read_text(encoding='utf-8')
+            st.markdown(md_text, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Failed to load tutorial content: {e}")
+    else:
+        st.info("Tutorial content not found. Add docs/tutorial.md to populate this tab.")

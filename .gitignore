@@ -2,6 +2,7 @@
 # Environments
 .env
 .venv
+.vscode
 env/
 venv/
 *.pyc
@@ -19,11 +20,16 @@ data/processed/*
 *.pt
 *.pth
 
+# Logs
+logs/
+
 # Jupyter
 .ipynb_checkpoints
 
 # OS Files
 .DS_Store
-Thumbs.db# pixi environments
-.pixi/*
+Thumbs.db
+
+# pixi environments
+.pixi
 !.pixi/config.toml

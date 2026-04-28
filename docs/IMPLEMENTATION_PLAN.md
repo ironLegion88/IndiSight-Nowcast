@@ -1,36 +1,102 @@
-# IndiSight-Nowcast: Implementation Plan & Work Split
+# IndiSight-Nowcast: Master Implementation Plan & Work Split
 
-## 1. Project Context
+## 1. Project Context & Hardware Strategy
+This project employs a **Split-Node Architecture** to bypass hardware limitations:
+*   **Compute Node (Member A):** High-end Workstation (Ryzen 9, RTX 4070, 96GB RAM). Handles all GPU-bound tasks, heavy remote sensing pipelines, XGBoost training, automated benchmarking, offline PCA, and local LLM (Ollama) hosting.
+*   **Application Node (Member B):** Standard hardware. Handles lightweight APIs (Gemini/Groq), database operations (PostGIS/Qdrant), LangChain agent logic, and the Streamlit frontend.
 
-*   **Member A:** Handles all GPU-bound tasks, heavy image processing, and local LLM hosting.
-*   **Member B:** Handles lightweight APIs, database operations, LangChain logic, and the Streamlit frontend.
-
-To ensure a flawless presentation on a standard laptop, **all heavy dimensionality reductions (PCA) and vision embeddings will be pre-computed offline** and stored as lightweight `.parquet` artifacts.
-
----
-
-## 2. Non-Blocking Work Split
-
-### Member A:
-*Focus: GPU compute, Remote Sensing, Tabular ML, and Offline Fallbacks.*
-1. **Satellite Data Pipeline (`src/data_engine/extract_gee.py`):** Write Google Earth Engine scripts to batch-download masked Sentinel-2 and VIIRS imagery for Indian districts.
-2. **Vision Embeddings (`src/models/vision_extractor.py`):** Pass raw images through ResNet-50 and Prithvi-100M using PyTorch. Output `[model]_embeddings.parquet`.
-3. **Offline PCA Fallbacks (`src/models/pca_precompute.py`):** To support UI sliders during the laptop demo, pre-calculate PCA reductions (e.g., 64, 128, 256, 512 dimensions) for both models and save them.
-4. **Predictive Modeling (`src/models/tabular_predictor.py`):** Build the XGBoost training pipeline that maps embeddings to NDAP target metrics. Generate SHAP value arrays.
-5. **Local LLM Testing:** Run `Ollama` locally (Llama-3/Mistral) to verify the agent's performance offline.
-
-### Member B:
-*Focus: Databases, APIs, Agentic Logic, and Frontend.*
-1. **NDAP Data Ingestion (`src/data_engine/ingest_ndap.py`):** Pull NFHS-5 and MGNREGA tabular data + GeoJSON boundaries. Clean and push to the local PostGIS database.
-2. **Infrastructure & RAG (`src/agent/rag_ingest.py`):** Maintain `docker-compose.yml`. Chunk NITI Aayog policy PDFs and ingest them into the Qdrant Vector Database.
-3. **LLM Agent (`src/agent/llm_agent.py`):** Build the LangChain ReAct agent using `LiteLLM`. Provide it with tools for PostGIS Text-to-SQL and Qdrant Vector Search. Default to the free Gemini 1.5 Flash API for development.
-4. **Streamlit UI (`app/main.py`):** Build the dashboard. Integrate `pydeck` for the 3D map, create the chat interface, and wire up Member A's pre-computed PCA artifacts to the UI sliders.
+To ensure flawless presentation on a standard laptop, **all heavy dimensionality reductions (PCA), SHAP values, and model predictions will be pre-computed offline** by Member A and serialized into a Benchmark Registry.
 
 ---
 
-## 3. Weekly Execution Timeline
+## 2. Core Architectural Standards
+1.  **Primary Key Standard:** All datasets and spatial boundaries MUST be joined using the **Local Government Directory (LGD) District Code**. String-based name matching is strictly prohibited.
+2.  **Data Aggregation Standard:** When loading NDAP files (NFHS/MGNREGA), the pipeline MUST filter for `TRU == 'Total'` (or `Residence type == 'Total'`) to prevent double-counting rural and urban populations.
+3.  **Automated Benchmarking:** No manual metric tracking. Model runs will automatically dump `metrics.json`, `predictions.parquet`, and `shap_summary.json` into `data/processed/benchmarks/`.
 
-*   **Week 1: Infrastructure & Data:** Member A gets GEE images; Member B gets PostGIS running with NDAP data.
-*   **Week 2: The Hand-off:** Member A extracts PyTorch embeddings and sends the `.parquet` files to Member B. Member B loads them into Qdrant.
-*   **Week 3: ML & AI Logic:** Member A builds XGBoost/SHAP. Member B builds the LangChain Agent and RAG pipeline.
-*   **Week 4: Integration & UI:** Wire Member A's model outputs and Member B's agent into the Streamlit app. Benchmark and test offline capabilities.
+---
+
+## 3. Detailed Module Implementation & Responsibilities
+
+### Phase 1: Data Engineering & EDA
+**Goal:** Establish clean, spatially aligned ground-truth data and extract satellite patches.
+
+*   **Task 1.1: Universal Logger & Loader (Member B)**
+    *   *File:* `src/utils/logger.py` & `src/data_engine/ingest_tabular.py`
+    *   *Spec:* Build a cross-platform logger. Build a Pandas loader that automatically cleans headers and applies the `TRU == 'Total'` filter.
+*   **Task 1.2: Comprehensive EDA (Member B)**
+    *   *File:* `notebooks/01_ndap_eda.ipynb`
+    *   *Spec:* Conduct missing value analysis, distribution plotting for baseline metrics, and MGNREGA temporal trend analysis.
+*   **Task 1.3: Spatial Boundaries (Member A)**
+    *   *File:* `src/data_engine/get_boundaries.py`
+    *   *Spec:* Download India District GeoJSON, format column names, and ensure LGD Codes are present.
+*   **Task 1.4: Satellite Extraction (Member A)**
+    *   *File:* `src/data_engine/extract_gee.py`
+    *   *Spec:* Calculate district centroids. Draw 5x5 km bounding boxes. Batch download cloud-free median composites of Sentinel-2 (Optical) and VIIRS (Nightlights). Save as `.tif` in `data/processed/images/`.
+*   **Task 1.5: PostGIS Ingestion (Member B)**
+    *   *File:* `src/data_engine/seed_postgis.py`
+    *   *Spec:* Create SQLAlchemy tables (`spatial_boundaries`, `ndap_nfhs_metrics`, `ndap_mgnrega_metrics`). Push cleaned DataFrames into the local Dockerized PostgreSQL instance.
+
+### Phase 2: Multi-Modal Machine Learning & Benchmarking
+**Goal:** Extract visual features, train XGBoost models, and populate the automated benchmark registry.
+
+*   **Task 2.1: Vision Extraction (Member A)**
+    *   *File:* `src/models/vision/vision_extractor.py`
+    *   *Spec:* Pass `.tif` images through ResNet-50 (Baseline) and Prithvi-100M/SatMAE (Geospatial). Output `resnet_embeddings.parquet` and `prithvi_embeddings.parquet` mapped to LGD codes.
+*   **Task 2.2: Offline PCA Pre-computation (Member A)**
+    *   *File:* `src/models/tabular/pca_precompute.py`
+    *   *Spec:* Reduce the 2048-d/1024-d embeddings to sizes [64, 128, 256, 512] and save them. This enables instantaneous UI slider switching.
+*   **Task 2.3: Automated Benchmark Tracker (Member A)**
+    *   *File:* `src/models/tabular/benchmark_tracker.py`
+    *   *Spec:* A Python class that serializes experiment runs (R2, MSE, MAE), predictions, and SHAP feature importance arrays to `data/processed/benchmarks/[run_id]/`.
+*   **Task 2.4: Model Pipeline & Training (Member A)**
+    *   *File:* `src/models/tabular/model_pipeline.py`
+    *   *Spec:* Implements the Two-Pronged Strategy:
+        *   *Phase A (Baseline):* Train XGBoost on a curated subset (Electricity, Clean Fuel, Sanitation, Literacy).
+        *   *Phase B (Discovery):* Loop through all 110+ NFHS metrics automatically to find the most predictable variables.
+        *   *MGNREGA Benchmarks:* Train models using MGNREGA as a *feature*, and a separate model predicting MGNREGA as a *target*.
+
+### Phase 3: Agentic AI & RAG
+**Goal:** Build the LLM co-pilot capable of SQL queries and policy retrieval.
+
+*   **Task 3.1: RAG Ingestion (Member B)**
+    *   *File:* `src/agent/ingest_docs.py`
+    *   *Spec:* Parse NITI Aayog PDF reports. Chunk text, generate embeddings using a lightweight SentenceTransformer, and store in Qdrant Vector DB.
+*   **Task 3.2: LLM Agent Architecture (Member B)**
+    *   *File:* `src/agent/llm_agent.py`
+    *   *Spec:* Implement a LangChain ReAct agent using `LiteLLM` (defaults to Gemini 1.5 Flash for dev, Ollama for production). 
+    *   *Tools:* Give the agent a `PostGIS_Text2SQL` tool, a `Qdrant_VectorSearch` tool, and a `Fetch_Prediction` tool.
+
+### Phase 4: Streamlit UI & Presentation
+**Goal:** Build the interactive dashboard integrating all layers.
+
+*   **Task 4.1: Dashboard UI (Member B & Member A)**
+    *   *File:* `app/main.py`
+    *   *Spec:* 
+        *   **Sidebar:** Dropdowns to read the `data/processed/benchmarks/` directory dynamically (Model: ResNet/Prithvi, PCA: 64-512, Target: NFHS/MGNREGA).
+        *   **Map:** Use `pydeck` to render 3D district polygons. Colorize based on prediction vs actual delta.
+        *   **Deep-Dive:** District click triggers SHAP waterfall plot rendering.
+        *   **Chat:** Interface for interacting with the LangChain Agent.
+
+---
+
+## 4. Weekly Execution Sprint Timeline
+
+### Week 1: Infrastructure & Data Acquisition
+*   **Member B (`feat/data-ingestion`):** Setup Logger, build `ingest_tabular.py`, run Comprehensive EDA Notebook. Define PostGIS schema and ingest NDAP CSVs and boundaries into Docker database.
+*   **Member A (`feat/vision-pipeline`):** Authenticate with Google Earth Engine. Write and execute `extract_gee.py` to download all 5x5km district image patches.
+
+### Week 2: Embeddings & DB Seeding (Integration Point 1)
+*   **Member A (`feat/vision-pipeline`):** Write PyTorch `vision_extractor.py`. Extract all raw embeddings. Run `pca_precompute.py`. Push the resulting `.parquet` files to the shared repo/drive.
+*   **Member B (`feat/data-ingestion`):** Begin `ingest_docs.py`. Load government PDFs into Qdrant. Verify PostGIS is successfully queried via standard SQL.
+
+### Week 3: Machine Learning & LLM Agent Logic
+*   **Member A (`feat/vision-pipeline`):** Build `benchmark_tracker.py` and `model_pipeline.py`. Run Phase A and Phase B automated training loops. Generate the final SHAP and Metric JSONs.
+*   **Member B (`feat/agent-logic`):** Build `llm_agent.py`. Construct the Text-to-SQL tool and test it extensively against the PostGIS database. Ensure the agent can accurately answer questions like "Which district has the lowest sanitation score?"
+
+### Week 4: Streamlit UI Integration & Polish
+*   **Joint Effort (`main` / `feat/ui-dashboard`):** 
+    *   Member B builds the UI skeleton and Agent chat interface.
+    *   Member A wires the UI sliders directly to the pre-computed Benchmark Registry JSON/Parquet files.
+    *   Implement `pydeck` mapping.
+    *   Test the system fully offline (Ollama + pre-computed models) on Member A's laptop to guarantee presentation stability.

@@ -1,0 +1,9 @@
+- Align the satellite images with the LGD Codes
+- Extract the embeddings from the images using the pre-trained model 
+- Make the dashboard use and display the data from the extracted embeddings
+- Write the explanations of the EDA plots, what do they mean? And what action can be taken based on them?
+- What is the relationship between the satellite embeddings and the NFHS data?
+- Write down the insights based on all the EDA plots
+- Host the dashboard on Streamlit Cloud
+- Write the report, and add it on the same dashboard. Include the main plots, insights, summary, etc.
+- Write a tutorial style blog on the entire project, and add it to the dashboard.

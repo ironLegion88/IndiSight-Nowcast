@@ -1,0 +1,8 @@
+metric_name,morans_i,p_value
+hh_electricity,0.551364185700097,0.001
+hh_clean_cooking_fuel,0.683805375866933,0.001
+hh_improved_sanitation,0.6387418695322742,0.001
+women_10yrs_schooling,0.6919159876641886,0.001
+child_stunted,0.5222425320704458,0.001
+women_anaemic,0.6666952471208274,0.001
+institutional_births_total,0.6804745506999489,0.001

@@ -1,0 +1,239 @@
+state,metric_value,metric_name
+Goa,100.0,hh_electricity
+Delhi,99.86363636363636,hh_electricity
+Puducherry,99.775,hh_electricity
+The Dadra And Nagar Haveli And Daman And Diu,99.73333333333333,hh_electricity
+Punjab,99.68181818181819,hh_electricity
+Haryana,99.61363636363636,hh_electricity
+Uttarakhand,99.60769230769232,hh_electricity
+Telangana,99.503125,hh_electricity
+Andhra Pradesh,99.48461538461538,hh_electricity
+Himachal Pradesh,99.45833333333333,hh_electricity
+Ladakh,99.44999999999999,hh_electricity
+Kerala,99.44285714285715,hh_electricity
+Tamil Nadu,99.2375,hh_electricity
+Sikkim,99.175,hh_electricity
+Karnataka,99.16000000000001,hh_electricity
+Jammu And Kashmir,98.91499999999999,hh_electricity
+Nagaland,98.51818181818182,hh_electricity
+Madhya Pradesh,98.37,hh_electricity
+Rajasthan,97.97575757575757,hh_electricity
+Chhattisgarh,97.96296296296296,hh_electricity
+Tripura,97.85,hh_electricity
+Mizoram,97.8375,hh_electricity
+Maharashtra,97.55142857142857,hh_electricity
+Gujarat,97.41818181818182,hh_electricity
+Manipur,97.38888888888889,hh_electricity
+West Bengal,97.14,hh_electricity
+Odisha,96.92666666666668,hh_electricity
+Andaman And Nicobar Islands,96.89999999999999,hh_electricity
+Bihar,96.54736842105264,hh_electricity
+Arunachal Pradesh,94.865,hh_electricity
+Jharkhand,93.45,hh_electricity
+Assam,93.15757575757576,hh_electricity
+Meghalaya,91.43636363636364,hh_electricity
+Uttar Pradesh,91.14933333333333,hh_electricity
+Delhi,98.9090909090909,hh_clean_cooking_fuel
+Goa,96.45,hh_clean_cooking_fuel
+Puducherry,91.425,hh_clean_cooking_fuel
+Telangana,90.371875,hh_clean_cooking_fuel
+The Dadra And Nagar Haveli And Daman And Diu,83.89999999999999,hh_clean_cooking_fuel
+Andhra Pradesh,82.86923076923077,hh_clean_cooking_fuel
+Mizoram,79.6625,hh_clean_cooking_fuel
+Tamil Nadu,79.5,hh_clean_cooking_fuel
+Karnataka,76.08999999999999,hh_clean_cooking_fuel
+Ladakh,75.8,hh_clean_cooking_fuel
+Punjab,74.72727272727273,hh_clean_cooking_fuel
+Maharashtra,72.76857142857143,hh_clean_cooking_fuel
+Sikkim,72.45,hh_clean_cooking_fuel
+Kerala,70.21428571428571,hh_clean_cooking_fuel
+Andaman And Nicobar Islands,70.03333333333333,hh_clean_cooking_fuel
+Jammu And Kashmir,63.285000000000004,hh_clean_cooking_fuel
+Gujarat,59.84545454545455,hh_clean_cooking_fuel
+Manipur,59.03333333333333,hh_clean_cooking_fuel
+Haryana,57.83181818181818,hh_clean_cooking_fuel
+Himachal Pradesh,53.65,hh_clean_cooking_fuel
+Arunachal Pradesh,52.279999999999994,hh_clean_cooking_fuel
+Uttarakhand,48.47692307692308,hh_clean_cooking_fuel
+Uttar Pradesh,47.077333333333335,hh_clean_cooking_fuel
+Tripura,40.7125,hh_clean_cooking_fuel
+Assam,39.92727272727272,hh_clean_cooking_fuel
+West Bengal,39.295,hh_clean_cooking_fuel
+Rajasthan,38.30909090909091,hh_clean_cooking_fuel
+Madhya Pradesh,37.686,hh_clean_cooking_fuel
+Bihar,36.36578947368421,hh_clean_cooking_fuel
+Nagaland,33.49090909090909,hh_clean_cooking_fuel
+Odisha,32.339999999999996,hh_clean_cooking_fuel
+Chhattisgarh,28.27777777777778,hh_clean_cooking_fuel
+Jharkhand,28.041666666666668,hh_clean_cooking_fuel
+Meghalaya,26.645454545454548,hh_clean_cooking_fuel
+Kerala,98.60000000000001,hh_improved_sanitation
+Mizoram,94.9375,hh_improved_sanitation
+Nagaland,88.2,hh_improved_sanitation
+Puducherry,88.19999999999999,hh_improved_sanitation
+Goa,87.95,hh_improved_sanitation
+Sikkim,87.35,hh_improved_sanitation
+Punjab,86.50454545454545,hh_improved_sanitation
+Andaman And Nicobar Islands,86.39999999999999,hh_improved_sanitation
+Haryana,85.02727272727272,hh_improved_sanitation
+Arunachal Pradesh,84.53999999999999,hh_improved_sanitation
+Meghalaya,83.38181818181819,hh_improved_sanitation
+Uttarakhand,82.30000000000001,hh_improved_sanitation
+Delhi,81.0909090909091,hh_improved_sanitation
+Himachal Pradesh,80.90833333333333,hh_improved_sanitation
+Andhra Pradesh,76.7,hh_improved_sanitation
+Karnataka,74.59666666666666,hh_improved_sanitation
+Telangana,74.328125,hh_improved_sanitation
+Jammu And Kashmir,73.75,hh_improved_sanitation
+The Dadra And Nagar Haveli And Daman And Diu,73.3,hh_improved_sanitation
+Chhattisgarh,72.80740740740741,hh_improved_sanitation
+Maharashtra,71.90857142857143,hh_improved_sanitation
+Gujarat,71.73333333333333,hh_improved_sanitation
+Tripura,71.6125,hh_improved_sanitation
+Tamil Nadu,71.571875,hh_improved_sanitation
+Manipur,71.35555555555555,hh_improved_sanitation
+Assam,70.10909090909091,hh_improved_sanitation
+Uttar Pradesh,68.98400000000001,hh_improved_sanitation
+Rajasthan,68.57575757575758,hh_improved_sanitation
+West Bengal,67.125,hh_improved_sanitation
+Madhya Pradesh,64.15,hh_improved_sanitation
+Odisha,59.65,hh_improved_sanitation
+Jharkhand,55.3125,hh_improved_sanitation
+Bihar,49.473684210526315,hh_improved_sanitation
+Ladakh,42.349999999999994,hh_improved_sanitation
+Kerala,76.88571428571429,women_10yrs_schooling
+Goa,71.45,women_10yrs_schooling
+Puducherry,66.5,women_10yrs_schooling
+Himachal Pradesh,62.80833333333334,women_10yrs_schooling
+Delhi,59.90909090909091,women_10yrs_schooling
+Tamil Nadu,56.025,women_10yrs_schooling
+Punjab,55.08181818181818,women_10yrs_schooling
+Uttarakhand,52.45384615384615,women_10yrs_schooling
+Andaman And Nicobar Islands,50.666666666666664,women_10yrs_schooling
+Ladakh,50.05,women_10yrs_schooling
+Haryana,49.63181818181818,women_10yrs_schooling
+Jammu And Kashmir,48.245,women_10yrs_schooling
+Karnataka,47.85,women_10yrs_schooling
+Maharashtra,46.4,women_10yrs_schooling
+Mizoram,45.25,women_10yrs_schooling
+Sikkim,45.125,women_10yrs_schooling
+Manipur,44.833333333333336,women_10yrs_schooling
+Telangana,42.887499999999996,women_10yrs_schooling
+The Dadra And Nagar Haveli And Daman And Diu,42.36666666666667,women_10yrs_schooling
+Nagaland,39.699999999999996,women_10yrs_schooling
+Andhra Pradesh,39.44615384615384,women_10yrs_schooling
+Arunachal Pradesh,38.9,women_10yrs_schooling
+Uttar Pradesh,38.224000000000004,women_10yrs_schooling
+Chhattisgarh,34.00370370370371,women_10yrs_schooling
+West Bengal,32.72,women_10yrs_schooling
+Odisha,31.91,women_10yrs_schooling
+Meghalaya,31.772727272727273,women_10yrs_schooling
+Rajasthan,31.327272727272724,women_10yrs_schooling
+Gujarat,31.09090909090909,women_10yrs_schooling
+Jharkhand,30.84583333333333,women_10yrs_schooling
+Assam,30.224242424242423,women_10yrs_schooling
+Bihar,28.58421052631579,women_10yrs_schooling
+Madhya Pradesh,27.97,women_10yrs_schooling
+Tripura,21.525,women_10yrs_schooling
+Meghalaya,42.981818181818184,child_stunted
+Bihar,42.58947368421053,child_stunted
+Jharkhand,40.1875,child_stunted
+Uttar Pradesh,39.63466666666667,child_stunted
+Gujarat,38.66060606060606,child_stunted
+Assam,35.696969696969695,child_stunted
+Chhattisgarh,35.67407407407408,child_stunted
+The Dadra And Nagar Haveli And Daman And Diu,35.43333333333333,child_stunted
+Madhya Pradesh,35.352,child_stunted
+Maharashtra,35.04857142857143,child_stunted
+Karnataka,34.580000000000005,child_stunted
+West Bengal,33.18,child_stunted
+Nagaland,33.163636363636364,child_stunted
+Telangana,33.15625,child_stunted
+Tripura,32.9625,child_stunted
+Rajasthan,31.742424242424242,child_stunted
+Odisha,31.653333333333332,child_stunted
+Himachal Pradesh,31.55,child_stunted
+Delhi,30.718181818181815,child_stunted
+Mizoram,30.5125,child_stunted
+Ladakh,30.4,child_stunted
+Andhra Pradesh,30.384615384615383,child_stunted
+Puducherry,28.925,child_stunted
+Uttarakhand,27.292307692307695,child_stunted
+Arunachal Pradesh,26.75,child_stunted
+Haryana,26.55,child_stunted
+Goa,26.25,child_stunted
+Jammu And Kashmir,26.15,child_stunted
+Punjab,25.386363636363637,child_stunted
+Tamil Nadu,25.315625,child_stunted
+Sikkim,24.9,child_stunted
+Manipur,24.62222222222222,child_stunted
+Kerala,23.27857142857143,child_stunted
+Andaman And Nicobar Islands,23.233333333333334,child_stunted
+Ladakh,92.75,women_anaemic
+West Bengal,71.845,women_anaemic
+Tripura,67.05,women_anaemic
+Jammu And Kashmir,66.92999999999999,women_anaemic
+Jharkhand,66.27499999999999,women_anaemic
+Assam,65.74545454545455,women_anaemic
+Bihar,64.6842105263158,women_anaemic
+Gujarat,64.56969696969698,women_anaemic
+Odisha,64.30333333333333,women_anaemic
+Chhattisgarh,63.01111111111111,women_anaemic
+Haryana,60.68181818181818,women_anaemic
+Andhra Pradesh,59.01538461538462,women_anaemic
+Punjab,58.77272727272727,women_anaemic
+Telangana,58.68125,women_anaemic
+The Dadra And Nagar Haveli And Daman And Diu,58.5,women_anaemic
+Madhya Pradesh,55.518,women_anaemic
+Rajasthan,55.43333333333333,women_anaemic
+Meghalaya,54.945454545454545,women_anaemic
+Maharashtra,54.83714285714286,women_anaemic
+Himachal Pradesh,54.166666666666664,women_anaemic
+Tamil Nadu,53.915625,women_anaemic
+Andaman And Nicobar Islands,52.699999999999996,women_anaemic
+Uttar Pradesh,50.44533333333334,women_anaemic
+Delhi,49.5,women_anaemic
+Karnataka,48.21333333333334,women_anaemic
+Puducherry,48.175,women_anaemic
+Sikkim,40.625,women_anaemic
+Uttarakhand,40.16923076923077,women_anaemic
+Arunachal Pradesh,38.85,women_anaemic
+Goa,38.8,women_anaemic
+Mizoram,36.2125,women_anaemic
+Kerala,35.72857142857143,women_anaemic
+Nagaland,29.20909090909091,women_anaemic
+Manipur,28.73333333333333,women_anaemic
+Goa,99.8,institutional_births_total
+Puducherry,99.775,institutional_births_total
+Kerala,99.7,institutional_births_total
+Tamil Nadu,99.65,institutional_births_total
+Andaman And Nicobar Islands,98.33333333333333,institutional_births_total
+Karnataka,97.42,institutional_births_total
+Andhra Pradesh,96.85384615384615,institutional_births_total
+Telangana,96.784375,institutional_births_total
+The Dadra And Nagar Haveli And Daman And Diu,96.46666666666665,institutional_births_total
+Sikkim,96.45,institutional_births_total
+Haryana,95.77272727272727,institutional_births_total
+Rajasthan,95.28484848484848,institutional_births_total
+Ladakh,95.05000000000001,institutional_births_total
+Punjab,94.88181818181819,institutional_births_total
+Maharashtra,94.69428571428573,institutional_births_total
+Gujarat,93.14545454545456,institutional_births_total
+Odisha,92.35333333333332,institutional_births_total
+West Bengal,92.235,institutional_births_total
+Jammu And Kashmir,91.67999999999999,institutional_births_total
+Delhi,91.60909090909091,institutional_births_total
+Madhya Pradesh,90.712,institutional_births_total
+Tripura,88.225,institutional_births_total
+Himachal Pradesh,87.80833333333334,institutional_births_total
+Assam,85.13939393939394,institutional_births_total
+Chhattisgarh,84.47037037037036,institutional_births_total
+Uttar Pradesh,84.04133333333334,institutional_births_total
+Mizoram,83.3625,institutional_births_total
+Uttarakhand,82.24615384615385,institutional_births_total
+Arunachal Pradesh,80.05,institutional_births_total
+Bihar,77.83684210526316,institutional_births_total
+Jharkhand,76.17916666666666,institutional_births_total
+Manipur,71.24444444444445,institutional_births_total
+Meghalaya,62.83636363636364,institutional_births_total
+Nagaland,43.28181818181818,institutional_births_total

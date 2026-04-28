@@ -13,7 +13,7 @@ data/processed/images/*
 data/raw/policy_docs/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
-*.parquet
+
 *.h5
 *.pt
 *.pth

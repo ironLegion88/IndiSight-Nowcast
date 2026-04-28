@@ -746,17 +746,17 @@
             development metrics without waiting for NFHS-6 survey.
         </div>
 
-        <h3>5.6 Technical Notes on Reconstruction Quality</h3>
+        <h3>5.6 Some notes</h3>
         <ul>
-            <li><strong>Smoothness is Expected:</strong> The reconstructed NIR is smoother than ground truth because embeddings compress 
+            <li>The reconstructed NIR is smoother than ground truth because embeddings compress 
             fine spatial detail into lower-dimensional vectors. This is not a flaw—it's a feature. Nowcasting doesn't require pixel-level 
             reconstruction; we need district-level patterns.</li>
-            <li><strong>Intensity Scale (0.0–1.4):</strong> Reconstruction intensity is a composite metric combining per-band MSE, SSIM 
+            <li> Reconstruction intensity is a composite metric combining per-band MSE, SSIM 
             (structural similarity), and confidence. Values &gt;1.0 indicate the model is confident in the reconstruction; values &lt;0.5 
             suggest rare or out-of-distribution spectra.</li>
-            <li><strong>Seasonal Bias:</strong> 2019 composites emphasize the wet season (July–Sept). This biases embeddings toward 
+            <li>2019 composites emphasize the wet season (July–Sept). This biases embeddings toward 
             vegetation vigor. For true year-round nowcasting, multi-season composites (winter dry season + summer monsoon) would be ideal.</li>
-            <li><strong>Spatial Resolution Trade-off:</strong> We downsampled to 30m to fit computational constraints. Finer resolution 
+            <li> We downsampled to 30m to fit computational constraints. Finer resolution 
             (10m) would improve detail but require a larger model or GPU cluster.</li>
         </ul>
     </section>
